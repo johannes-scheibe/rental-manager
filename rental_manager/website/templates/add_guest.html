@@ -1,0 +1,78 @@
+{% extends "base.html" %} {% block title %}Gast hinzufügen{% endblock %} 
+{% block content %}
+    <form method="POST">
+      <h3 align="center">Gast hinzufügen</h3>
+      <div class="form-group">
+        <label for="prename">Vorname</label>
+        <input
+          type="text"
+          class="form-control"
+          id="prename"
+          name="prename"
+          placeholder="Vorname eingeben"
+        />
+      </div>
+      <div class="form-group">
+        <label for="surname">Nachname</label>
+        <input
+          type="text"
+          class="form-control"
+          id="surname"
+          name="surname"
+          placeholder="Nachname eingeben"
+        />
+      </div>
+      <div class="form-group">
+        <label for="email">E-Mail</label>
+        <input
+          type="email"
+          class="form-control"
+          id="email"
+          name="email"
+          placeholder="E-Mail eingeben"
+        />
+      </div>
+      <div class="form-group">
+        <label for="streetName">Straße</label>
+        <input
+          type="text"
+          class="form-control"
+          id="streetName"
+          name="streetName"
+          placeholder="Straße eingeben"
+        />
+      </div>
+      <div class="form-group">
+        <label for="houseNumber">Hausnummer</label>
+        <input
+          type="text"
+          class="form-control"
+          id="houseNumber"
+          name="houseNumber"
+          placeholder="Hausnummer eingeben"
+        />
+      </div>
+      <div class="form-group">
+        <label for="postcode">Postleitzahl</label>
+        <input
+          type="text"
+          class="form-control"
+          id="postcode"
+          name="postcode"
+          placeholder="Postleitzahl eingeben"
+        />
+      </div>
+      <div class="form-group">
+        <label for="city">Stadt</label>
+        <input
+          type="text"
+          class="form-control"
+          id="city"
+          name="city"
+          placeholder="Stadt eingeben"
+        />
+      </div>
+      <br />
+      <button type="submit" class="btn btn-primary">Speichern</button>
+    </form>
+{% endblock %}

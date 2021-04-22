@@ -1,0 +1,88 @@
+{% extends "base.html" %} {% block title %}Buchung erstellen{% endblock %} 
+{% block content %}
+    <form method="POST">
+      <h3 align="center">Buchung erstellen</h3>
+      <div class="form-group">
+        <label for="guest">Gast</label>
+        <input
+          type="text"
+          class="form-control autocomplete"
+          id="autoGuest"
+          name="guest"
+          placeholder="Gast auswählen"
+        />
+      </div>
+      <div class="form-group">
+        <label for="flat">Wohnung</label>
+        <input
+          type="text"
+          class="form-control"
+          id="flat"
+          name="flat"
+          placeholder="Wohnung angeben"
+        />
+      </div>
+      <div class="form-group">
+        <label for="numberPersons">Anzahl Personen</label>
+        <input
+          type="text"
+          class="form-control"
+          id="numberPersons"
+          name="numberPersons"
+          placeholder="Anzahl der Personen angeben"
+        />
+      </div>
+      <div class="form-group">
+        <label for="numberPets">Anzahl Haustiere</label>
+        <input
+          type="text"
+          class="form-control"
+          id="numberPets"
+          name="numberPets"
+          placeholder="Anzahl der Haustiere angeben"
+        />
+      </div>
+      <div class="form-group">
+        <label for="startDate">Von</label>
+        <input
+          type="text"
+          class="form-control"
+          id="startDate"
+          name="startDate"
+          placeholder="Anreisedatum angeben"
+        />
+      </div>
+      <div class="form-group">
+        <label for="endDate">Bis</label>
+        <input
+          type="text"
+          class="form-control"
+          id="endDate"
+          name="endDate"
+          placeholder="Abreisedatum angeben"
+        />
+      </div>
+      <div class="form-group">
+        <label for="price">Preis</label>
+        <input
+          type="text"
+          class="form-control"
+          id="price"
+          name="price"
+          placeholder="Preis angeben"
+        />
+      </div>
+      <br />
+      <button type="submit" class="btn btn-primary">Speichern</button>
+    </form>
+
+    <script>
+      $('#autoGuest').autocomplete({
+      serviceUrl: '/search/guest',
+      dataType: 'json',
+      onSearchComplete: function (query, suggestions) {
+        console.log(query);
+      }
+  });
+      </script>
+{% endblock %}
