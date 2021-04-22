@@ -4,6 +4,8 @@ import os
 app = create_app()
 
 if __name__ == '__main__':
-    app.config["CLIENT_AGREEMENTS"] = os.path.join(os.path.abspath("website"), "/static/agreements/")
+    path = os.path.join(os.path.abspath("rental_manager"), "website\\static\\agreements\\")
+    print(path)
+    app.config["CLIENT_AGREEMENTS"] = path
+    #app.run(host= "0.0.0.0", port=80, debug=True)
     app.run(debug=True)
-    

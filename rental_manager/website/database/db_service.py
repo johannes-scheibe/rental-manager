@@ -72,7 +72,7 @@ def get_flat_by_id(id) -> Guest:
 
 
 # Bookings
-def add_booking(flat, guest_id, number_persons, number_pets, start_date, end_date, price) -> str:
+def add_booking(path, flat, guest_id, number_persons, number_pets, start_date, end_date, price) -> str:
 
     # check if flat exists
     flat = Flat.query.filter_by(name=flat).first()
@@ -108,7 +108,7 @@ def add_booking(flat, guest_id, number_persons, number_pets, start_date, end_dat
     file_name = agreement.create_bill_name()
     parser = ConfigParser()
     parser.read('config.ini')
-    file_path = str(path.abspath('website/static/agreements/' + file_name))
+    file_path = str(path + file_name)
     pdf.output(file_path, 'F').encode('latin-1')
     add_agreement(new_booking.id, file_name)
 
@@ -140,5 +140,5 @@ def add_agreement(booking_id, file_name):
     db.session.add(new_agreement)
     db.session.commit()
 
-def get_agreement_by_booking_id(booking_id:str) -> RentalAgreement:
+def get_agreement_by_booking_id(booking_id) -> RentalAgreement:
     return RentalAgreement.query.filter_by(booking_id=booking_id).first()

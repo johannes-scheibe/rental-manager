@@ -1,0 +1,2 @@
+Bankverbindung:  VB Oldenburg,  Blz 28061822,   Kontonummer 1611000
+BIC GENODEF1EDE, IBAN DE37280618220001611000

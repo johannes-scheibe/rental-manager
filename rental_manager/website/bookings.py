@@ -48,10 +48,12 @@ def create_booking():
         
         guest = db_service.get_guest_by_surname(guest)
         if guest is not None:
-            file_name = db_service.add_booking(flat=flat, guest_id=guest.id, number_persons=number_persons, number_pets=number_pets, start_date=start_date, end_date=end_date, price=price)
+            path = app.config["CLIENT_AGREEMENTS"]
+            print(path)
+            file_name = db_service.add_booking(path= path, flat=flat, guest_id=guest.id, number_persons=number_persons, number_pets=number_pets, start_date=start_date, end_date=end_date, price=price)
             if file_name is not None:
                 try:
-                    return send_from_directory(app.config["CLIENT_AGREEMENTS"], filename=file_name, as_attachment=True)
+                    return send_from_directory(path, filename=file_name, as_attachment=True)
                 except Exception as e:
                     return abort(404)
         else:
@@ -63,10 +65,12 @@ def create_booking():
 @bookings.route("show-agreement/<int:booking_id>")
 def show_agreement(booking_id):
     agreement = db_service.get_agreement_by_booking_id(booking_id)
+    print(agreement)
     try:
         return send_from_directory(app.config["CLIENT_AGREEMENTS"], filename=agreement.file_name, as_attachment=False)
     except Exception as e:
-        print((agreement.file_name))
+        print(e)
+        #print(agreement.file_name)
         return abort(404)
 
 @bookings.route("/search/<string:box>")
