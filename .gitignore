@@ -75,3 +75,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Database
+agreements/
+*.db

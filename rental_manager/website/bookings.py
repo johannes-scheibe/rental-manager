@@ -59,7 +59,9 @@ def create_booking():
         else:
             flash("Der angegebene Gast existiert nicht, bitte tragen Sie diesen erst ein.", category='error')
 
-    return render_template("create_booking.html")
+    guests = db_service.get_all_guests()
+    flats = db_service.get_all_flats()
+    return render_template("create_booking.html", guests = guests, flats = flats)
 
 
 @bookings.route("show-agreement/<int:booking_id>")
@@ -85,3 +87,11 @@ def search(box):
     if box == 'flat':
         suggestions = [{'value': 'song1','data': '123'}, {'value': 'song2','data': '234'}]
     return jsonify({"suggestions":suggestions})
+
+@bookings.route("/delete/<int:booking_id>")
+def delete(booking_id):
+    if db_service.delete_agreement(booking_id):
+        flash("Die Buchung wurde erfolgreich gelöscht", category='success')
+    else:
+        flash("Ein Fehler ist aufgetreten", category='error')
+    return redirect("/bookings")

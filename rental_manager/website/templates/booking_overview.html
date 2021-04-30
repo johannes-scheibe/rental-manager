@@ -13,6 +13,7 @@
           <th scope="col">Anreise</th>
           <th scope="col">Abreise</th>
           <th scope="col">Preis</th>
+          <th scope="col"></th>
         </tr>
       </thead>
       <tbody>
@@ -26,6 +27,7 @@
             <td>{{ item.start_date }}</td>
             <td>{{ item.end_date }}</td>
             <td>{{ item.price }}</td>
+            <td><a href="/delete/{{ item.id }}"><button class="btn"><i class="fa fa-trash"></i></button></a></td>
           </tr>
       {% endfor %}
       </tbody>

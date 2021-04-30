@@ -116,6 +116,14 @@ def add_booking(path, flat, guest_id, number_persons, number_pets, start_date, e
 
     return file_name
 
+def delete_agreement(booking_id: int):
+    bookings = Booking.query.filter_by(id=booking_id)
+    if bookings.count() == 0:
+        return False
+    for item in bookings:
+        db.session.delete(item)
+    db.session.commit() 
+    return True
 
 def get_all_bookings():
     return Booking.query.all()
@@ -142,3 +150,6 @@ def add_agreement(booking_id, file_name):
 
 def get_agreement_by_booking_id(booking_id) -> RentalAgreement:
     return RentalAgreement.query.filter_by(booking_id=booking_id).first()
+
+def get_all_flats():
+    return Flat.query.all()
