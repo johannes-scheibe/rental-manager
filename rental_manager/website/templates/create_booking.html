@@ -1,88 +1,96 @@
 {% extends "base.html" %} {% block title %}Buchung erstellen{% endblock %} 
 {% block content %}
-    <form method="POST">
+    <form method="POST" autocomplete="off">
       <h3 align="center">Buchung erstellen</h3>
       <div class="form-group">
         <label for="guest">Gast</label>
-        <input
-          type="text"
-          class="form-control autocomplete"
-          id="autoGuest"
-          name="guest"
-          placeholder="Gast auswählen"
-        />
+        <select class="form-control autocomplete" id="guestId" name="guestId" required>
+          <option value="" disabled>Wähle einen Gast...</option>
+          {% for g in guests %}
+          <option value="{{g.id}}" {% if data['guest_id']==g.id %} selected {% endif %}>{{g.prename + " " + g.surname}}</option>
+          {% endfor %}
+        </select>
       </div>
       <div class="form-group">
         <label for="flat">Wohnung</label>
-        <input
-          type="text"
-          class="form-control"
-          id="flat"
-          name="flat"
-          placeholder="Wohnung angeben"
-        />
+        <select class="form-control autocomplete" id="flatId" name="flatId" required>
+          <option value="" disabled>Wähle eine Wohnung...</option>
+          {% for f in flats %}
+          <option value="{{f.id}}" {% if data['flat_id']==f.id %} selected {% endif %}>{{f.name}}</option>
+          {% endfor %}
+        </select>
       </div>
       <div class="form-group">
         <label for="numberPersons">Anzahl Personen</label>
         <input
-          type="text"
           class="form-control"
           id="numberPersons"
           name="numberPersons"
           placeholder="Anzahl der Personen angeben"
+          type="number" min="1" max="9" step="1"
+          value= {{ data['number_persons'] }}
+          required
         />
       </div>
       <div class="form-group">
         <label for="numberPets">Anzahl Haustiere</label>
         <input
-          type="text"
           class="form-control"
           id="numberPets"
           name="numberPets"
           placeholder="Anzahl der Haustiere angeben"
+          type="number" min="0" max="5" step="1"
+          value={{ data['number_pets'] }}
+          required
         />
       </div>
       <div class="form-group">
         <label for="startDate">Von</label>
         <input
-          type="text"
+          type="date"
           class="form-control"
           id="startDate"
           name="startDate"
           placeholder="Anreisedatum angeben"
+          value={{ data['start_date'] }}
+          required
         />
       </div>
       <div class="form-group">
         <label for="endDate">Bis</label>
         <input
-          type="text"
+          type="date"
           class="form-control"
           id="endDate"
           name="endDate"
           placeholder="Abreisedatum angeben"
+          value={{ data['end_date'] }}
+          required
         />
       </div>
       <div class="form-group">
         <label for="price">Preis</label>
         <input
-          type="text"
+          type="number" min="0.00" max="10000.00" step="0.01"
           class="form-control"
           id="price"
           name="price"
           placeholder="Preis angeben"
+          value={{ data['price'] }}
+          required
         />
       </div>
       <br />
       <button type="submit" class="btn btn-primary">Speichern</button>
     </form>
 
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="selectize.js"></script>
+    <link rel="stylesheet" type="text/css" href="selectize.css" />
+  
     <script>
-      $('#autoGuest').autocomplete({
-      serviceUrl: '/search/guest',
-      dataType: 'json',
-      onSearchComplete: function (query, suggestions) {
-        console.log(query);
-      }
-  });
-      </script>
+    $(function() {
+      ('.autocomplete').selectize();
+    });
+    </script>
 {% endblock %}

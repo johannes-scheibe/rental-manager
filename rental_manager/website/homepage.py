@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template, request, flash, jsonify, redirect, url_for, send_from_directory, abort
 from flask_login import login_required, current_user
-from .database.models import Note
 import json
 from .database import db_service
 from .database import db

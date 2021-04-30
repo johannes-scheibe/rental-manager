@@ -9,7 +9,8 @@ class Admin(db.Model, UserMixin):
     password = db.Column(db.String(150))
 
 class Booking(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String, primary_key=True)
+    timestamp = db.Column(db.Integer)
     flat_id = db.Column(db.Integer, db.ForeignKey('flat.id'))
     guest_id = db.Column(db.Integer, db.ForeignKey('guest.id'))
     number_persons = db.Column(db.Integer)
@@ -20,6 +21,7 @@ class Booking(db.Model):
     
 class Flat(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+
     name = db.Column(db.String(50), unique= True)
     bookings = db.relationship('Booking')
 
@@ -38,20 +40,6 @@ class Guest(db.Model):
 
 class RentalAgreement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.Integer)
     booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'))
     file_name = db.Column(db.String(150))
-
-
-class Note(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    data = db.Column(db.String(10000))
-    date = db.Column(db.DateTime(timezone=True), default=func.now())
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
-
-class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(150), unique=True)
-    password = db.Column(db.String(150))
-    first_name = db.Column(db.String(150))
-    notes = db.relationship('Note')
