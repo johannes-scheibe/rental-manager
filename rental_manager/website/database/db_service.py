@@ -1,6 +1,6 @@
 from .models import Guest, Flat, Booking, RentalAgreement
 from flask import flash
-from os import path
+import os
 from . import db, DB_NAME
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
@@ -72,13 +72,18 @@ def get_flat_by_id(id) -> Guest:
 
 
 # Bookings
-def add_booking(path, flat, guest_id, number_persons, number_pets, start_date, end_date, price) -> str:
+def add_booking(path, data) -> str:
 
+    guest_id = data['guest_id']
+    flat_id =data['flat_id']
+    number_persons =data['number_persons']
+    number_pets =data['number_pets']
+    start_date =data['start_date']
+    end_date =data['end_date']
+    price =data['price']
     # check if flat exists
-    flat = Flat.query.filter_by(name=flat).first()
-    if flat:
-        flat_id = flat.id
-    else:
+    flat = Flat.query.filter_by(id=flat_id).first()
+    if not flat:
         flash('Die angegebene Wohnung existiert nicht.', category='error')
         return None
 
@@ -89,15 +94,15 @@ def add_booking(path, flat, guest_id, number_persons, number_pets, start_date, e
         return None
 
     # validate dates and convert to datetime
-    start = validate_date(start_date)
-    end = validate_date(end_date)
-    if not start:
+    start = datetime.strptime(start_date, '%Y-%m-%d')
+    end = datetime.strptime(end_date, '%Y-%m-%d')
+    if not is_valid_period(start_date, end_date):
+        flash('Der angegebene Zeitraum ist ungültig', category='error')
         return None
-    if not end:
-        return None
-    
+
     # insert in db
-    new_booking = Booking(flat_id=flat_id, guest_id=guest_id, number_persons=number_persons, number_pets=number_pets, start_date=start, end_date=end, price=price)
+    id = uid(Booking)
+    new_booking = Booking(id=id, flat_id=flat_id, timestamp=timestamp(), guest_id=guest_id, number_persons=number_persons, number_pets=number_pets, start_date=start, end_date=end, price=price)
     db.session.add(new_booking)
     db.session.commit()
     flash('Buchung erfolgreich erstellt!', category='success')
@@ -105,16 +110,20 @@ def add_booking(path, flat, guest_id, number_persons, number_pets, start_date, e
     agreement = Agreement(new_booking)
     # Erstellen der Vereinbarung
     pdf = agreement.create_agreement()
-    file_name = agreement.create_bill_name()
+    file_name = agreement.create_bill_name(id)
     parser = ConfigParser()
     parser.read('config.ini')
-    file_path = str(path + file_name)
+    year = datetime.now().year
+    if not os.path.exists(path + str(year)):
+        os.makedirs(path + str(year))
+    file_path = str(path + str(year) + "/" + file_name)
     pdf.output(file_path, 'F').encode('latin-1')
     add_agreement(new_booking.id, file_name)
 
     flash('PDF erfolgreich erstellt!', category='success')
 
     return file_name
+
 
 def delete_agreement(booking_id: int):
     bookings = Booking.query.filter_by(id=booking_id)
@@ -125,8 +134,16 @@ def delete_agreement(booking_id: int):
     db.session.commit() 
     return True
 
+
 def get_all_bookings():
-    return Booking.query.all()
+    return Booking.query.order_by(Booking.timestamp.desc())
+
+
+def is_valid_period(start_date, end_date):
+    if start_date < end_date:
+        return True
+    return False
+
 
 def validate_date(text):
     pattern = r'(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](20|21)\d\d'
@@ -144,7 +161,7 @@ def validate_date(text):
 
 # Rental agreements
 def add_agreement(booking_id, file_name):
-    new_agreement = RentalAgreement(booking_id=booking_id, file_name=file_name)
+    new_agreement = RentalAgreement(booking_id=booking_id, timestamp=timestamp(), file_name=file_name)
     db.session.add(new_agreement)
     db.session.commit()
 
@@ -153,3 +170,14 @@ def get_agreement_by_booking_id(booking_id) -> RentalAgreement:
 
 def get_all_flats():
     return Flat.query.all()
+
+def uid(db_model):
+    last_entry = db_model.query.order_by(Booking.timestamp.desc()).first()
+    if last_entry is None:
+        running_number = 1
+    else:
+        running_number = int(last_entry.id.split("-")[0]) + 1
+    return "{:03d}".format(running_number) + "-" + str(datetime.now().year)
+
+def timestamp():
+    return int(datetime.now().timestamp() * 1000)

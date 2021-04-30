@@ -58,19 +58,16 @@ class Agreement():
                 parser.write(f)
             return new
 
-    def _generate_uuid(self) -> int:
-        return uuid.uuid4().int
-
-    def create_bill_name(self):
+    def create_bill_name(self, id):
         start = str(self.start_date.strftime("%d-%m-%Y").replace('.', ''))
         end = str(self.end_date.strftime("%d-%m-%Y").replace('.', ''))
-        file_name = "Rechnung_" + str(datetime.now().strftime("%Y")) + "_" + str(datetime.now().strftime("%m%d")) + "_" + str(self._generate_uuid()) + "_" + "Borkum" + self.holiday_flat + "_" + self.surname + start + "b" + end + '.pdf'
+        file_name = "Rechnung_" + str(id) + "_" + "Borkum" + self.holiday_flat + "_" + self.surname + start + "b" + end + '.pdf'
         return file_name
 
     def create_filename(self):
         start = str(self.start_date.strftime("%d-%m-%Y").replace('.', ''))
         end = str(self.end_date.strftime("%d-%m-%Y").replace('.', ''))
-        file_name = "Übersicht_" +  "_" + "Borkum" + self.holiday_flat + "_" + self.surname + start + "b" + end + '.pdf'
+        file_name = "Übersicht_" +  "_" + "Borkum" + "_" + self.holiday_flat + "_" + self.surname + start + "b" + end + '.pdf'
         return file_name
 
     def create_overview(self):
