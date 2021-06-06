@@ -66,9 +66,14 @@ def create_booking():
 
 @bookings.route("/bookings/delete/<string:booking_id>")
 def delete(booking_id):
-    if db_service.delete_agreement(booking_id):
-        # TODO remove or move agreement
-        # os.remove("demofile.txt")
+    print("Delete")
+    if not os.path.exists(app.config["CLIENT_AGREEMENTS"] + "deleted"):
+        os.makedirs(app.config["CLIENT_AGREEMENTS"] + "deleted")
+    deleted_agreement = db_service.delete_agreement(booking_id)
+    if deleted_agreement is not None:
+        year = booking_id.split("-")[1]
+        print(year)
+        os.replace(os.path.join(app.config["CLIENT_AGREEMENTS"], str(year), deleted_agreement.file_name), os.path.join(app.config["CLIENT_AGREEMENTS"], "deleted", deleted_agreement.file_name))
         flash("Die Buchung wurde erfolgreich gelöscht", category='success')
     else:
         flash("Ein Fehler ist aufgetreten", category='error')

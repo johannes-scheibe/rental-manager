@@ -18,7 +18,7 @@ class PDF(FPDF):
         f = open(os.path.join(path, "Mietvereinbarung", "Footer.txt"), 'r')
         text = f.read()
         f.close()
-        self.multi_cell(0, 5, text, border="T", align='C')
+        self.multi_cell(0, 5, text.encode('latin-1', 'replace').decode('latin-1'), border="T", align='C')
 
 
 class Agreement():
@@ -91,24 +91,24 @@ class Agreement():
         text = text + "Nächte:  " + str(self.nights) + "\n"
         text = text + "Anzahl Personen:  " + str(self.persons) + "\n"
         text = text + "Anzahl Haustiere:  " + str(self.pets) + "\n \n"
-        pdf.multi_cell(0, 5, text, align='L')
+        pdf.multi_cell(0, 5, text.encode('latin-1', 'replace').decode('latin-1'), align='L')
         # Preis
         pdf.set_font('Times', 'B', 12)
         text = "Preis:" + "\n"
-        pdf.multi_cell(0, 5, text, align='L')
+        pdf.multi_cell(0, 5, text.encode('latin-1', 'replace').decode('latin-1'), align='L')
 
         pdf.set_font('Times', '', 12)
         text = ""
         text = text + "Gesamt: " + str(self.price) + "\n"
         text = text + "Anzahlung: " + str(self.price*0.25) + "\n"
         text = text + "Rest: " + str(self.price*0.75) + "\n \n"
-        pdf.multi_cell(0, 5, text, align='L')
+        pdf.multi_cell(0, 5, text.encode('latin-1', 'replace').decode('latin-1'), align='L')
         # Adresse
         pdf.set_font('Times', 'B', 12)
         pdf.multi_cell(0, 5, "Anschrift:", align='L')
         pdf.set_font('Times', '', 12)
         text = self.street + " " + str(self.house_number) + "\n " +  str(self.postcode) + " " + self.city
-        pdf.multi_cell(0, 5, text, align='L')
+        pdf.multi_cell(0, 5, text.encode('latin-1', 'replace').decode('latin-1'), align='L')
 
         return pdf
 
@@ -128,31 +128,31 @@ class Agreement():
         text = f.read().split("\n")
         f.close()
         for t in text:
-            pdf.cell(0, 5, t, ln=2, align='R')
+            pdf.cell(0, 5, t.encode('latin-1', 'replace').decode('latin-1'), ln=2, align='R')
 
         # Gast
         f = open(os.path.join(path, "Mietvereinbarung", "Header_Gast.txt"), 'r')
         text = f.read().split("\n")
         f.close()
         for t in text:
-            pdf.cell(0, 5, t, ln=2, align='L')
+            pdf.cell(0, 5, t.encode('latin-1', 'replace').decode('latin-1'), ln=2, align='L')
 
         # Ort, Datum
         text = "Friedrichsfehn, den " + \
             str(datetime.now().strftime("%d.%m.%Y"))
-        pdf.cell(0, 5, text, ln=2, align='R')
+        pdf.cell(0, 5, text.encode('latin-1', 'replace').decode('latin-1'), ln=2, align='R')
 
         # Überschrift
         text = "\nBetr.: Ihr Aufenthalt in unserer Ferienwohnung  auf Borkum \n "
         pdf.set_font('Times', 'B', 12)
-        pdf.multi_cell(0, 5, text, align='L')
+        pdf.multi_cell(0, 5, text.encode('latin-1', 'replace').decode('latin-1'), align='L')
 
         # Info
         f = open(os.path.join(path, "Mietvereinbarung", "Info.txt"), 'r')
         text = f.read()
         f.close()
         pdf.set_font('Times', '', 12)
-        pdf.multi_cell(0, 5, text, align='L')
+        pdf.multi_cell(0, 5, text.encode('latin-1', 'replace').decode('latin-1'), align='L')
 
         pdf.add_page()
 
@@ -161,37 +161,37 @@ class Agreement():
             str(self.house_number) + ", " + \
             str(self.postcode) + " " + self.city + "\n \n \n "
         pdf.set_font('Times', '', 12)
-        pdf.multi_cell(0, 5, text, align='L')
+        pdf.multi_cell(0, 5, text.encode('latin-1', 'replace').decode('latin-1'), align='L')
 
         # Anschrift Angela
         text = "Angela Scheibe \nRüschenweg 46 \n26188 Edewecht"
         pdf.set_font('Times', '', 12)
-        pdf.multi_cell(0, 5, text, align='L')
+        pdf.multi_cell(0, 5, text.encode('latin-1', 'replace').decode('latin-1'), align='L')
 
         # Ort, Datum
         text = self.city + ", den                      "
-        pdf.cell(0, 5, text, ln=2, align='R')
+        pdf.cell(0, 5, text.encode('latin-1', 'replace').decode('latin-1'), ln=2, align='R')
 
         # mietvereinbarung
         text = "\nMietvereinbarung\n "
         pdf.set_font('Times', 'B', 14)
-        pdf.multi_cell(0, 5, text, align='C')
+        pdf.multi_cell(0, 5, text.encode('latin-1', 'replace').decode('latin-1'), align='C')
 
         text = "Ich bestätige, dass ich Ihre Ferienwohnung " + chr(34) + \
             self.holiday_flat + chr(34) + " (Borkum, Greune-Stee-Weg 43) vom "
         pdf.set_font('Times', '', 12)
-        pdf.multi_cell(0, 5, text, align='L')
+        pdf.multi_cell(0, 5, text.encode('latin-1', 'replace').decode('latin-1'), align='L')
 
         text = self.start_date.strftime("%d.%m.%Y") + " bis zum " + self.end_date.strftime("%d.%m.%Y")
         pdf.set_font('Times', 'B', 12)
-        pdf.multi_cell(0, 5, text, align='C')
+        pdf.multi_cell(0, 5, text.encode('latin-1', 'replace').decode('latin-1'), align='C')
 
         text = "mieten werde. (" + str(self.nights) + " Übernachtungen)"
         pdf.set_font('Times', '', 12)
-        pdf.multi_cell(0, 5, text, align='L')
+        pdf.multi_cell(0, 5, text.encode('latin-1', 'replace').decode('latin-1'), align='L')
 
         text = "Die Miete (ohne Kurbeitrag) beträgt:"
-        pdf.multi_cell(0, 5, text, align='L')
+        pdf.multi_cell(0, 5, text.encode('latin-1', 'replace').decode('latin-1'), align='L')
 
         text = str(self.price).replace('.', ',') + chr(128) + \
             " Wohnungsmiete (inkl. Bettwäsche/Handtücher für " + \
@@ -201,21 +201,21 @@ class Agreement():
                 str(self.pets) + " Haustier/e)"
         else:
             text = text + ")"
-        pdf.multi_cell(0, 5, text, align='L')
+        pdf.multi_cell(0, 5, text.encode('latin-1', 'replace').decode('latin-1'), align='L')
 
         text = "Eine Anzahlung auf den Mietpreis in Höhe von 25% (" + str(
             self.price*0.25).replace('.', ',') + chr(128)+") werde ich sofort überweisen, den Restbetrag 4 Wochen vor Beginn des Buchungszeitraums. \nDes Weiteren werde ich dafür Sorge tragen, dass das Rauchverbot in der Wohnung eingehalten und die Wohnung sauber und gereinigt verlassen wird. \n\n\n\n "
-        pdf.multi_cell(0, 5, text, align='L')
+        pdf.multi_cell(0, 5, text.encode('latin-1', 'replace').decode('latin-1'), align='L')
 
         text = "Unterschrift \n\n "
-        pdf.multi_cell(35, 5, text, border='T', align='L')
+        pdf.multi_cell(35, 5, text.encode('latin-1', 'replace').decode('latin-1'), border='T', align='L')
 
         text = "Mitreisende: \n         Vorname,   Nachname,   Geburtsdatum: "
         for i in range(0, self.persons):
             text = text + "\n\n" + str(i+1) + ". "
-        pdf.multi_cell(0, 5, text, align='L')
+        pdf.multi_cell(0, 5, text.encode('latin-1', 'replace').decode('latin-1'), align='L')
 
         text = "\nFür den Rücktritt von dieser bestätigten Buchung gilt die Hotelordnung der Kurverwaltung Borkum. Diese sagt aus, dass der Mietpreis auch dann fällig ist, wenn die Wohnung nicht in Anspruch genommen wird und kein Ersatzmieter gefunden werden kann. Einsparungen von 10% werden angerechnet."
-        pdf.multi_cell(0, 5, text, align='L')
+        pdf.multi_cell(0, 5, text.encode('latin-1', 'replace').decode('latin-1'), align='L')
         return pdf
 

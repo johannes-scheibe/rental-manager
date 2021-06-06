@@ -128,11 +128,13 @@ def add_booking(path, data) -> str:
 def delete_agreement(booking_id: int):
     bookings = Booking.query.filter_by(id=booking_id)
     if bookings.count() == 0:
-        return False
-    for item in bookings:
-        db.session.delete(item)
+        return None
+    for b in bookings:
+        agreement = RentalAgreement.query.filter_by(booking_id=b.id).first()
+        db.session.delete(b)
+        db.session.delete(agreement)
     db.session.commit() 
-    return True
+    return agreement
 
 
 def get_all_bookings():
