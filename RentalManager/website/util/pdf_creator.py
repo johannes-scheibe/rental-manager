@@ -5,6 +5,7 @@ from configparser import ConfigParser
 from ..database import db_service
 from ..database.models import Guest, Booking, Flat
 import uuid
+import os
 
 class PDF(FPDF):
     def footer(self):
@@ -118,16 +119,18 @@ class Agreement():
         pdf.add_page()
 
         pdf.set_font('Times', '', 12)
+        path = os.path.relpath("Mietvereinbarung")
 
         # Anschrift Angela
-        f = codecs.open('Mietvereinbarung/Header_Angela.txt', 'r', 'utf-8')
+	
+        f = open(os.path.join(path, 'Header_Angela.txt'), 'r')
         text = f.read().split("\n")
         f.close()
         for t in text:
             pdf.cell(0, 5, t, ln=2, align='R')
 
         # Gast
-        f = codecs.open('Mietvereinbarung/Header_Gast.txt', 'r', 'utf-8')
+        f = codecs.open('/Mietvereinbarung/Header_Gast.txt', 'r', 'utf-8')
         text = f.read().split("\n")
         f.close()
         for t in text:
