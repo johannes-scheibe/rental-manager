@@ -38,7 +38,6 @@ def booking_overview():
 
 @bookings.route('/create-booking', methods=['GET', 'POST'])
 def create_booking():
-    data = None
     if request.method == 'POST':
         data = {
             'guest_id' : request.form.get('guestId'),
@@ -50,6 +49,13 @@ def create_booking():
             'price' : request.form.get('price')
         }
         
+        # Check if no data is none
+        for d in data.values():
+            if d is None or d == "":
+                guests = db_service.get_all_guests()
+                flats = db_service.get_all_flats()
+                flash("Bitte alle Felder ausfüllen")
+                return render_template("create_booking.html", guests = guests, flats = flats, data = data)
 
         path = app.config["CLIENT_AGREEMENTS"]
         file_name = db_service.add_booking(path=path, data=data)
@@ -57,6 +63,15 @@ def create_booking():
             flash("Die Buchung wurde erfolgreich erstellt")
             redirect("/bookings") 
 
+    data = {
+            'guest_id' : "",
+            'flat_id' : "",
+            'number_persons' : "",
+            'number_pets' : "",
+            'start_date' : "",
+            'end_date' : "",
+            'price' : ""
+        }
     guests = db_service.get_all_guests()
     flats = db_service.get_all_flats()
     return render_template("create_booking.html", guests = guests, flats = flats, data = data)

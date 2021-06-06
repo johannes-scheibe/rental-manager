@@ -28,7 +28,7 @@
           name="numberPersons"
           placeholder="Anzahl der Personen angeben"
           type="number" min="1" max="9" step="1"
-          value= {{ data['number_persons'] }}
+          {% if data['number_persons'] != "" %} value={{ data['number_persons'] }} {% endif %}
           required
         />
       </div>
@@ -40,7 +40,7 @@
           name="numberPets"
           placeholder="Anzahl der Haustiere angeben"
           type="number" min="0" max="5" step="1"
-          value={{ data['number_pets'] }}
+          {% if data['number_pets'] != "" %} value={{ data['number_pets'] }} {% endif %}
           required
         />
       </div>
@@ -52,7 +52,7 @@
           id="startDate"
           name="startDate"
           placeholder="Anreisedatum angeben"
-          value={{ data['start_date'] }}
+          {% if data['start_date'] != "" %} value={{ data['start_date'] }} {% endif %}
           required
         />
       </div>
@@ -64,7 +64,7 @@
           id="endDate"
           name="endDate"
           placeholder="Abreisedatum angeben"
-          value={{ data['end_date'] }}
+          {% if data['end_date'] != "" %} value={{ data['end_date'] }} {% endif %}
           required
         />
       </div>
@@ -76,7 +76,7 @@
           id="price"
           name="price"
           placeholder="Preis angeben"
-          value={{ data['price'] }}
+          {% if data['price'] != "" %} value={{ data['price'] }} {% endif %}
           required
         />
       </div>

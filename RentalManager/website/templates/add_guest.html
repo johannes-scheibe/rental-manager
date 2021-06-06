@@ -10,6 +10,8 @@
           id="prename"
           name="prename"
           placeholder="Vorname eingeben"
+          {% if data['prename'] != "" %} value= {{ data['prename'] }} {% endif %}
+          required
         />
       </div>
       <div class="form-group">
@@ -20,6 +22,8 @@
           id="surname"
           name="surname"
           placeholder="Nachname eingeben"
+          {% if data['surname'] != "" %} value= {{ data['surname'] }} {% endif %}
+          required
         />
       </div>
       <div class="form-group">
@@ -30,6 +34,8 @@
           id="email"
           name="email"
           placeholder="E-Mail eingeben"
+          {% if data['email'] != "" %} value= {{ data['email'] }} {% endif %}
+          required
         />
       </div>
       <div class="form-group">
@@ -40,6 +46,8 @@
           id="streetName"
           name="streetName"
           placeholder="Straße eingeben"
+          {% if data['street_name'] != "" %} value= {{ data['street_name'] }} {% endif %}
+          required
         />
       </div>
       <div class="form-group">
@@ -50,6 +58,8 @@
           id="houseNumber"
           name="houseNumber"
           placeholder="Hausnummer eingeben"
+          {% if data['house_number'] != "" %} value= {{ data['house_number'] }} {% endif %}
+          required
         />
       </div>
       <div class="form-group">
@@ -60,6 +70,8 @@
           id="postcode"
           name="postcode"
           placeholder="Postleitzahl eingeben"
+          {% if data['postcode'] != "" %} value= {{ data['postcode'] }} {% endif %}
+          required
         />
       </div>
       <div class="form-group">
@@ -70,6 +82,8 @@
           id="city"
           name="city"
           placeholder="Stadt eingeben"
+          {% if data['city'] != "" %} value= {{ data['city'] }} {% endif %}
+          required
         />
       </div>
       <br />

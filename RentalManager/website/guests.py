@@ -25,17 +25,36 @@ def guest_profile(guest_id):
 
 @guests.route('/add-guest', methods=['GET', 'POST'])
 def add_guest():
+
     if request.method == 'POST':
+        data = {
+            "prename" : request.form.get('prename'),
+            "surname" : request.form.get('surname'),
+            "email" : request.form.get('email'),
+            "street_name" : request.form.get('streetName'),
+            "house_number" : request.form.get('houseNumber'),
+            "postcode" : request.form.get('postcode'),
+            "city" : request.form.get('city')
+        }
 
-        prename = request.form.get('prename')
-        surname = request.form.get('surname')
-        email = request.form.get('email')
-        street_name = request.form.get('streetName')
-        house_number = request.form.get('houseNumber')
-        postcode = request.form.get('postcode')
-        city = request.form.get('city')
+        # Check if no data is none
+        for d in data.values():
+            if d is None or d == "":
+                guests = db_service.get_all_guests()
+                flats = db_service.get_all_flats()
+                flash("Bitte alle Felder ausfüllen")
+                return render_template("add_guest.html", data=data)
 
-        if db_service.add_guest(prename=prename, surname=surname, email=email, street_name=street_name, house_number=house_number, postcode=postcode, city=city):
+        if db_service.add_guest(data = data):
             return redirect(url_for('guests.guest_overview'))
-        
-    return render_template("add_guest.html")
+            
+    data = {
+        "prename" : "",
+        "surname" : "",
+        "email" : "",
+        "street_name" : "",
+        "house_number" : "",
+        "postcode" : "",
+        "city" : ""
+    }    
+    return render_template("add_guest.html", data=data)

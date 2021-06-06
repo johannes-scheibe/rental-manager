@@ -38,19 +38,19 @@ def insert_default_entries():
         pass
 
 # Guests
-def add_guest(prename, surname, email, street_name, house_number, postcode, city) -> bool:
-
-    guest = Guest.query.filter_by(email=email, prename = prename, surname = surname).first()
+def add_guest(data) -> bool:
+    print(data)
+    guest = Guest.query.filter_by(email=data['email'], prename = data['prename'], surname = data['surname']).first()
     if guest:
         flash('Es existiert bereits ein Gast mit diesen Angaben.', category='error')
-    elif len(email) < 4:
+    elif len(data['email']) < 4:
         flash('Die E-Mail muss mindestens eine Länge von 3 Zeichen besitzen.', category='error')
-    elif len(prename) < 2:
+    elif len(data['prename']) < 2:
         flash('Der Vorname muss mindestens eine Länge von 2 Zeichen besitzen.', category='error')
-    elif len(surname) < 2:
+    elif len(data['surname']) < 2:
         flash('Der Nachname muss mindestens eine Länge von 2 Zeichen besitzen', category='error')
     else:
-        new_guest = Guest(prename=prename, surname=surname, email=email, street_name=street_name, house_number=house_number, postcode=postcode, city=city)
+        new_guest = Guest(prename=data['prename'], surname=data['surname'], email=data['email'], street_name=data['street_name'], house_number=data['house_number'], postcode=data['postcode'], city=data['city'])
         db.session.add(new_guest)
         db.session.commit()
         flash('Gast erfolgreich erstellt!', category='success')
