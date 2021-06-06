@@ -28,7 +28,7 @@ def booking_overview():
             "flat" : flat.name,
             "guest" : guest.prename + " " + guest.surname,
             "number_persons" : booking.number_persons,
-            "number_pets" : booking.number_persons,
+            "number_pets" : booking.number_pets,
             "start_date" : booking.start_date.strftime("%d.%m.%Y"),
             "end_date" : booking.end_date.strftime("%d.%m.%Y"),
             "price" : str(booking.price) + " €"
@@ -67,7 +67,8 @@ def create_booking():
 @bookings.route("/bookings/delete/<string:booking_id>")
 def delete(booking_id):
     if db_service.delete_agreement(booking_id):
-        os.remove("demofile.txt")
+        # TODO remove or move agreement
+        # os.remove("demofile.txt")
         flash("Die Buchung wurde erfolgreich gelöscht", category='success')
     else:
         flash("Ein Fehler ist aufgetreten", category='error')
@@ -78,7 +79,7 @@ def download(booking_id):
     agreement = db_service.get_agreement_by_booking_id(booking_id)
     year = datetime.now().year
     try:
-        return send_from_directory(app.config["CLIENT_AGREEMENTS"]  + str(year), filename=agreement.file_name, as_attachment=True)
+        return send_from_directory(app.config["CLIENT_AGREEMENTS"]  + str(year), path=agreement.file_name, as_attachment=True)
     except Exception as e:
         print(app.config["CLIENT_AGREEMENTS"] + agreement.file_name)
         return abort(404)
@@ -87,8 +88,10 @@ def download(booking_id):
 @bookings.route("/bookings/show/<string:booking_id>")
 def show(booking_id):
     agreement = db_service.get_agreement_by_booking_id(booking_id)
-    year = datetime.now().year
+    year = booking_id.split("-")[1]
+    
     try:
-        return send_from_directory(app.config["CLIENT_AGREEMENTS"] + str(year) , filename=agreement.file_name, as_attachment=False)
+        return send_from_directory(app.config["CLIENT_AGREEMENTS"] + str(year) , path=agreement.file_name, as_attachment=False)
     except Exception as e:
+        print(e)
         return abort(404)

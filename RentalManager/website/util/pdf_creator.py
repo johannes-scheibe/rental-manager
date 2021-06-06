@@ -14,7 +14,7 @@ class PDF(FPDF):
         # Select Arial italic 8
         self.set_font('Times', '', 12)
         # Print centered page number
-        f = codecs.open('Mietvereinbarung/Footer.txt', 'r', 'utf-8')
+        f = codecs.open('RentalManager/website/util/Mietvereinbarung/Footer.txt', 'r', 'utf-8')
         text = f.read()
         f.close()
         self.multi_cell(0, 5, text, border="T", align='C')
@@ -85,8 +85,8 @@ class Agreement():
         text = ""
         text = text + "Name:  " + str(self.prename) + " " + str(self.surname) + "\n"
         text = text + "Wohnung:  " + str(self.holiday_flat) + "\n"
-        text = text + "Von:  " + str(self.start_date.strftime("%d-%m-%Y")) + "\n"
-        text = text + "Bis:  " + str(self.end_date.strftime("%d-%m-%Y")) + "\n"
+        text = text + "Von:  " + str(self.start_date.strftime("%d.%m.%Y")) + "\n"
+        text = text + "Bis:  " + str(self.end_date.strftime("%d.%m.%Y")) + "\n"
         text = text + "Nächte:  " + str(self.nights) + "\n"
         text = text + "Anzahl Personen:  " + str(self.persons) + "\n"
         text = text + "Anzahl Haustiere:  " + str(self.pets) + "\n \n"
@@ -123,14 +123,14 @@ class Agreement():
 
         # Anschrift Angela
 	
-        f = open(os.path.join(path, 'Header_Angela.txt'), 'r')
+        f = open('RentalManager/website/util/Mietvereinbarung/Header_Angela.txt', 'r')
         text = f.read().split("\n")
         f.close()
         for t in text:
             pdf.cell(0, 5, t, ln=2, align='R')
 
         # Gast
-        f = codecs.open('/Mietvereinbarung/Header_Gast.txt', 'r', 'utf-8')
+        f = codecs.open('RentalManager/website/util/Mietvereinbarung/Header_Gast.txt', 'r', 'utf-8')
         text = f.read().split("\n")
         f.close()
         for t in text:
@@ -147,7 +147,7 @@ class Agreement():
         pdf.multi_cell(0, 5, text, align='L')
 
         # Info
-        f = codecs.open('Mietvereinbarung/Info.txt', 'r', 'utf-8')
+        f = codecs.open('RentalManager/website/util/Mietvereinbarung/Info.txt', 'r', 'utf-8')
         text = f.read()
         f.close()
         pdf.set_font('Times', '', 12)
@@ -181,7 +181,7 @@ class Agreement():
         pdf.set_font('Times', '', 12)
         pdf.multi_cell(0, 5, text, align='L')
 
-        text = self.start_date.strftime("%d-%m-%Y") + " bis zum " + self.end_date.strftime("%d-%m-%Y")
+        text = self.start_date.strftime("%d.%m.%Y") + " bis zum " + self.end_date.strftime("%d.%m.%Y")
         pdf.set_font('Times', 'B', 12)
         pdf.multi_cell(0, 5, text, align='C')
 
