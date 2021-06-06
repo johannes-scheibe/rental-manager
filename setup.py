@@ -3,9 +3,9 @@ Setup file for building binaries
 """
 from setuptools import setup, find_packages
 
-setup(name='rental_manager',
+setup(name='RentalManager',
     version='1.0',
-    packages=find_packages(include=['rental_manager', 'rental_manager.*']),
+    packages=find_packages(include=['RentalManager', 'RentalManager.*']),
     classifiers=[
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
