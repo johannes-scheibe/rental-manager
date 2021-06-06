@@ -79,7 +79,7 @@ def download(booking_id):
     agreement = db_service.get_agreement_by_booking_id(booking_id)
     year = datetime.now().year
     try:
-        return send_from_directory(app.config["CLIENT_AGREEMENTS"]  + str(year), path=agreement.file_name, as_attachment=True)
+        return send_from_directory(app.config["CLIENT_AGREEMENTS"]  + str(year), filename=agreement.file_name, as_attachment=True)
     except Exception as e:
         print(app.config["CLIENT_AGREEMENTS"] + agreement.file_name)
         return abort(404)
@@ -89,9 +89,8 @@ def download(booking_id):
 def show(booking_id):
     agreement = db_service.get_agreement_by_booking_id(booking_id)
     year = booking_id.split("-")[1]
-    
     try:
-        return send_from_directory(app.config["CLIENT_AGREEMENTS"] + str(year) , path=agreement.file_name, as_attachment=False)
+        return send_from_directory(app.config["CLIENT_AGREEMENTS"] + str(year) , filename=agreement.file_name, as_attachment=False)
     except Exception as e:
         print(e)
         return abort(404)

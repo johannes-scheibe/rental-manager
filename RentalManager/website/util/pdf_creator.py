@@ -14,7 +14,8 @@ class PDF(FPDF):
         # Select Arial italic 8
         self.set_font('Times', '', 12)
         # Print centered page number
-        f = codecs.open('RentalManager/website/util/Mietvereinbarung/Footer.txt', 'r', 'utf-8')
+        path = os.path.dirname(os.path.abspath(__file__))
+        f = open(os.path.join(path, "Mietvereinbarung", "Footer.txt"), 'r')
         text = f.read()
         f.close()
         self.multi_cell(0, 5, text, border="T", align='C')
@@ -119,18 +120,18 @@ class Agreement():
         pdf.add_page()
 
         pdf.set_font('Times', '', 12)
-        path = os.path.relpath("Mietvereinbarung")
+        path = os.path.dirname(os.path.abspath(__file__))
 
         # Anschrift Angela
 	
-        f = open('RentalManager/website/util/Mietvereinbarung/Header_Angela.txt', 'r')
+        f = open(os.path.join(path, "Mietvereinbarung", "Header_Angela.txt"), 'r')
         text = f.read().split("\n")
         f.close()
         for t in text:
             pdf.cell(0, 5, t, ln=2, align='R')
 
         # Gast
-        f = codecs.open('RentalManager/website/util/Mietvereinbarung/Header_Gast.txt', 'r', 'utf-8')
+        f = open(os.path.join(path, "Mietvereinbarung", "Header_Gast.txt"), 'r')
         text = f.read().split("\n")
         f.close()
         for t in text:
@@ -147,7 +148,7 @@ class Agreement():
         pdf.multi_cell(0, 5, text, align='L')
 
         # Info
-        f = codecs.open('RentalManager/website/util/Mietvereinbarung/Info.txt', 'r', 'utf-8')
+        f = open(os.path.join(path, "Mietvereinbarung", "Info.txt"), 'r')
         text = f.read()
         f.close()
         pdf.set_font('Times', '', 12)
