@@ -166,7 +166,7 @@ def add_agreement(booking_id, file_name):
     db.session.commit()
 
 def get_agreement_by_booking_id(booking_id) -> RentalAgreement:
-    return RentalAgreement.query.filter_by(booking_id=booking_id).first()
+    return RentalAgreement.query.filter_by(booking_id=str(booking_id)).first()
 
 def get_all_flats():
     return Flat.query.all()
