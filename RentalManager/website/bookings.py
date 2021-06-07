@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, flash, jsonify, redirect, url_for, send_from_directory, abort
-from flask_login import login_required, current_user
+from flask_login import login_required, current_user as current_profile
 import json
 from .database import db_service
 from .database import db
@@ -16,6 +16,7 @@ bookings = Blueprint('bookings', __name__)
 
 
 @bookings.route('/bookings')
+@login_required
 def booking_overview():
     data = []
     bookings = db_service.get_all_bookings()
@@ -34,9 +35,10 @@ def booking_overview():
             "price" : str(booking.price) + " €"
         }
         data.append(entry)
-    return render_template("booking_overview.html", data=data)
+    return render_template("booking_overview.html", profile=current_profile, data=data)
 
 @bookings.route('/create-booking', methods=['GET', 'POST'])
+@login_required
 def create_booking():
     if request.method == 'POST':
         data = {
@@ -55,7 +57,7 @@ def create_booking():
                 guests = db_service.get_all_guests()
                 flats = db_service.get_all_flats()
                 flash("Bitte alle Felder ausfüllen")
-                return render_template("create_booking.html", guests = guests, flats = flats, data = data)
+                return render_template("create_booking.html", profile=current_profile, guests = guests, flats = flats, data = data)
 
         path = app.config["CLIENT_AGREEMENTS"]
         file_name = db_service.add_booking(path=path, data=data)
@@ -74,12 +76,13 @@ def create_booking():
         }
     guests = db_service.get_all_guests()
     flats = db_service.get_all_flats()
-    return render_template("create_booking.html", guests = guests, flats = flats, data = data)
+    return render_template("create_booking.html", profile=current_profile, guests = guests, flats = flats, data = data)
 
 
 
 
 @bookings.route("/bookings/delete/<string:booking_id>")
+@login_required
 def delete(booking_id):
     print("Delete")
     if not os.path.exists(app.config["CLIENT_AGREEMENTS"] + "deleted"):
@@ -95,6 +98,7 @@ def delete(booking_id):
     return redirect("/bookings")
 
 @bookings.route("/bookings/download/<string:booking_id>")
+@login_required
 def download(booking_id):
     agreement = db_service.get_agreement_by_booking_id(booking_id)
     year = datetime.now().year
@@ -106,6 +110,7 @@ def download(booking_id):
     return redirect("/bookings")
 
 @bookings.route("/bookings/show/<string:booking_id>")
+@login_required
 def show(booking_id):
     agreement = db_service.get_agreement_by_booking_id(booking_id)
     year = booking_id.split("-")[1]
