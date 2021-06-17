@@ -11,30 +11,32 @@ from ..util.pdf_creator import Agreement
 from configparser import ConfigParser
 
 def insert_default_entries():
-    try:        
+    try:      
+        # TODO dont accept duplicates  
         # default entries
-        flat = Flat(name='Borkum')
+        flat = Flat(profile_id=current_profile.id, name='Borkum')
         db.session.add(flat)
 
-        flat = Flat(name='Baltrum')
+        flat = Flat(profile_id=current_profile.id, name='Baltrum')
         db.session.add(flat)
 
-        flat = Flat(name='Langeoog')
+        flat = Flat(profile_id=current_profile.id, name='Langeoog')
         db.session.add(flat)
 
-        flat = Flat(name='Memmert')
+        flat = Flat(profile_id=current_profile.id, name='Memmert')
         db.session.add(flat)
 
-        flat = Flat(name='Studio 1')
+        flat = Flat(profile_id=current_profile.id, name='Studio 1')
         db.session.add(flat)
 
-        flat = Flat(name='Studio 2')
+        flat = Flat(profile_id=current_profile.id, name='Studio 2')
         db.session.add(flat)
 
         db.session.commit()
         
         flash('DB erfolgreich befüllt', category='success')
-    except IntegrityError:
+    except IntegrityError as e:
+        print(e)
         pass
 
 # Guests
@@ -171,10 +173,11 @@ def get_agreement_by_booking_id(booking_id) -> RentalAgreement:
     return RentalAgreement.query.filter_by(profile_id=current_profile.id, booking_id=str(booking_id)).first()
 
 def get_all_flats():
-    return Flat.query.all()
+    return Flat.query.filter_by(profile_id=current_profile.id).all()
 
 def uid(db_model):
-    last_entry = db_model.query.filter_by(profile_id=current_profile.id).order_by(Booking.timestamp.desc()).first()
+    # Handle unique ids for all profiles
+    last_entry = db_model.query.order_by(Booking.timestamp.desc()).first()
     if last_entry is None:
         running_number = 1
     else:

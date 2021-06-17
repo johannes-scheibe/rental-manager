@@ -59,7 +59,7 @@ def create_booking():
                 flash("Bitte alle Felder ausfüllen")
                 return render_template("create_booking.html", profile=current_profile, guests = guests, flats = flats, data = data)
 
-        path = app.config["CLIENT_AGREEMENTS"]
+        path = app.config["CLIENT_AGREEMENTS"] + str(current_profile.profile_name) + "/"
         file_name = db_service.add_booking(path=path, data=data)
         if file_name is not None:
             flash("Die Buchung wurde erfolgreich erstellt")
@@ -85,13 +85,13 @@ def create_booking():
 @login_required
 def delete(booking_id):
     print("Delete")
-    if not os.path.exists(app.config["CLIENT_AGREEMENTS"] + "deleted"):
-        os.makedirs(app.config["CLIENT_AGREEMENTS"] + "deleted")
+    if not os.path.exists(app.config["CLIENT_AGREEMENTS"] + str(current_profile.profile_name) + "/" + "deleted"):
+        os.makedirs(app.config["CLIENT_AGREEMENTS"] + str(current_profile.profile_name) + "/" + "deleted")
     deleted_agreement = db_service.delete_agreement(booking_id)
     if deleted_agreement is not None:
         year = booking_id.split("-")[1]
         print(year)
-        os.replace(os.path.join(app.config["CLIENT_AGREEMENTS"], str(year), deleted_agreement.file_name), os.path.join(app.config["CLIENT_AGREEMENTS"], "deleted", deleted_agreement.file_name))
+        os.replace(os.path.join(app.config["CLIENT_AGREEMENTS"] + str(current_profile.profile_name) + "/", str(year), deleted_agreement.file_name), os.path.join(app.config["CLIENT_AGREEMENTS"] + str(current_profile.profile_name) + "/", "deleted", deleted_agreement.file_name))
         flash("Die Buchung wurde erfolgreich gelöscht", category='success')
     else:
         flash("Ein Fehler ist aufgetreten", category='error')
@@ -103,9 +103,9 @@ def download(booking_id):
     agreement = db_service.get_agreement_by_booking_id(booking_id)
     year = datetime.now().year
     try:
-        return send_from_directory(app.config["CLIENT_AGREEMENTS"]  + str(year), filename=agreement.file_name, as_attachment=True)
+        return send_from_directory(app.config["CLIENT_AGREEMENTS"] + str(current_profile.profile_name) + "/"  + str(year), filename=agreement.file_name, as_attachment=True)
     except Exception as e:
-        print(app.config["CLIENT_AGREEMENTS"] + agreement.file_name)
+        print(app.config["CLIENT_AGREEMENTS"] + str(current_profile.profile_name) + "/" + agreement.file_name)
         return abort(404)
     return redirect("/bookings")
 
@@ -115,7 +115,7 @@ def show(booking_id):
     agreement = db_service.get_agreement_by_booking_id(booking_id)
     year = booking_id.split("-")[1]
     try:
-        return send_from_directory(app.config["CLIENT_AGREEMENTS"] + str(year) , filename=agreement.file_name, as_attachment=False)
+        return send_from_directory(app.config["CLIENT_AGREEMENTS"] + str(current_profile.profile_name) + "/" + str(year) , filename=agreement.file_name, as_attachment=False)
     except Exception as e:
         print(e)
         return abort(404)

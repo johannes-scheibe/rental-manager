@@ -1,6 +1,7 @@
 from . import db
 from flask_login import UserMixin
 from sqlalchemy.sql import func
+from sqlalchemy.schema import UniqueConstraint
 
 
 
@@ -17,8 +18,9 @@ class Profile(db.Model, UserMixin):
 class Flat(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     profile_id = db.Column(db.Integer, db.ForeignKey('profile.id'))
-    name = db.Column(db.String(50), unique= True)
+    name = db.Column(db.String(50))
     bookings = db.relationship('Booking')
+    __table_args__ = (UniqueConstraint('profile_id', 'name', name='flat_name'),)
 
 class Guest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
