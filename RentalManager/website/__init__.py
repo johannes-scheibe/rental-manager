@@ -2,9 +2,8 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from os import path
 from flask_login import LoginManager
-from .database import db, DB_NAME, db_service
-from .database.models import Flat
-import time
+from .database import db, DB_NAME
+
 
 def create_app():
     app = Flask(__name__)
@@ -23,8 +22,17 @@ def create_app():
     app.register_blueprint(guests, url_prefix='/')
     app.register_blueprint(bookings, url_prefix='/')
 
+    from .database.models import Profile
 
     create_database(app)
+
+    login_manager = LoginManager()
+    login_manager.login_view = 'auth.login'
+    login_manager.init_app(app)
+
+    @login_manager.user_loader
+    def load_user(id):
+        return Profile.query.get(int(id))
 
     return app
 

@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, flash, jsonify, redirect, url_for, send_from_directory, abort
-from flask_login import login_required, current_user
+from flask_login import login_required, current_user as current_profile
 import json
 from .database import db_service
 from .database import db
@@ -13,19 +13,21 @@ from os import path
 guests = Blueprint('guests', __name__)
 
 @guests.route('/guests')
+@login_required
 def guest_overview():
     data = db_service.get_all_guests()
-    return render_template("guest_overview.html", data=data)
+    return render_template("guest_overview.html", profile=current_profile, data=data)
 
 @guests.route('/guests/<int:guest_id>')
+@login_required
 def guest_profile(guest_id):
     guest = db_service.get_guest_by_id(guest_id)
-    return render_template("guest_profile.html", guest=guest)
+    return render_template("guest_profile.html", profile=current_profile, guest=guest)
 
 
 @guests.route('/add-guest', methods=['GET', 'POST'])
+@login_required
 def add_guest():
-
     if request.method == 'POST':
         data = {
             "prename" : request.form.get('prename'),
@@ -57,4 +59,4 @@ def add_guest():
         "postcode" : "",
         "city" : ""
     }    
-    return render_template("add_guest.html", data=data)
+    return render_template("add_guest.html", profile=current_profile, data=data)

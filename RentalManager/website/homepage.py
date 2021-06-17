@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, flash, jsonify, redirect, url_for, send_from_directory, abort
-from flask_login import login_required, current_user
+from flask_login import login_required, current_user as current_profile
 import json
 from .database import db_service
 from .database import db
@@ -13,9 +13,9 @@ from os import path
 homepage = Blueprint('homepage', __name__)
 
 @homepage.route('/')
+@login_required
 def home():
-    
-    return render_template("home.html")
+    return render_template("home.html", profile=current_profile)
 
 @homepage.route('/init-db')
 def init_db():
