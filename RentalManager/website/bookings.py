@@ -119,3 +119,12 @@ def show(booking_id):
     except Exception as e:
         print(e)
         return abort(404)
+
+        
+@bookings.route('/bookings/<string:booking_id>')
+@login_required
+def booking_info(booking_id):
+
+    booking = db_service.get_booking_by_id(booking_id)
+
+    return render_template("booking.html", profile=current_profile, booking=booking)

@@ -58,6 +58,14 @@ def add_guest(data) -> bool:
         flash('Gast erfolgreich erstellt!', category='success')
         return True
     return False
+    
+def update_guest(id, data) -> bool:
+    guest = Guest.query.filter_by(profile_id=current_profile.id, id=id).first()
+    for key, value in data.items():
+        setattr(guest, key, value)
+    db.session.commit()
+    flash('Gast erfolgreich aktualisiert!', category='success')
+    return True
 
 def get_guest_by_surname(surname) -> Guest:
     return Guest.query.filter_by(profile_id=current_profile.id, surname=surname).first()
@@ -69,9 +77,14 @@ def get_all_guests() -> Guest:
     return Guest.query.filter_by(profile_id=current_profile.id).all()
 
 # Flat
+def get_all_flats():
+    return Flat.query.filter_by(profile_id=current_profile.id).all()
+
 def get_flat_by_id(id) -> Guest:
     return Flat.query.filter_by(profile_id=current_profile.id,id=id).first()
 
+def get_flats_as_dict():
+    return list_result__to_dict(Flat.query.filter_by(profile_id=current_profile.id).all())
 
 # Bookings
 def add_booking(path, data) -> str:
@@ -142,6 +155,12 @@ def delete_agreement(booking_id: int):
 def get_all_bookings():
     return Booking.query.filter_by(profile_id=current_profile.id).order_by(Booking.timestamp.desc())
 
+def get_booking_by_id(id):
+    return Booking.query.filter_by(profile_id=current_profile.id, id=id).first()
+
+def get_bookings_by_guest_id(guest_id):
+    return Booking.query.filter_by(profile_id=current_profile.id, guest_id = guest_id).order_by(Booking.timestamp.desc())
+
 
 def is_valid_period(start_date, end_date):
     if start_date < end_date:
@@ -172,8 +191,7 @@ def add_agreement(booking_id, file_name):
 def get_agreement_by_booking_id(booking_id) -> RentalAgreement:
     return RentalAgreement.query.filter_by(profile_id=current_profile.id, booking_id=str(booking_id)).first()
 
-def get_all_flats():
-    return Flat.query.filter_by(profile_id=current_profile.id).all()
+
 
 def uid(db_model):
     # Handle unique ids for all profiles
@@ -186,3 +204,7 @@ def uid(db_model):
 
 def timestamp():
     return int(datetime.now().timestamp() * 1000)
+
+def list_result__to_dict(result):
+    return {r.id : r for r in result}
+
