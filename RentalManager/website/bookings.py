@@ -37,6 +37,16 @@ def booking_overview():
         data.append(entry)
     return render_template("booking_overview.html", profile=current_profile, data=data)
 
+@bookings.route('/bookings/<string:booking_id>')
+@login_required
+def booking_details(booking_id):
+    booking = db_service.get_booking_by_id(booking_id)
+    guest = db_service.get_guest_by_id(booking.guest_id)
+    flat = db_service.get_flat_by_id(booking.flat_id)
+
+    return render_template("booking_details.html", profile=current_profile, guest=guest, booking=booking, flat=flat)
+
+
 @bookings.route('/create-booking', methods=['GET', 'POST'])
 @login_required
 def create_booking():
@@ -121,10 +131,3 @@ def show(booking_id):
         return abort(404)
 
         
-@bookings.route('/bookings/<string:booking_id>')
-@login_required
-def booking_info(booking_id):
-
-    booking = db_service.get_booking_by_id(booking_id)
-
-    return render_template("booking.html", profile=current_profile, booking=booking)

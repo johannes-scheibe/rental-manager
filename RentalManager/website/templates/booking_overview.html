@@ -19,18 +19,22 @@
       </thead>
       <tbody>
         {% for item in data %}
-          <tr>
-            <th scope="row"><a href="/bookings/show/{{ item.id }}">{{ item.id }}</a></th>
-            <td>{{ item.flat }}</td>
-            <td>{{ item.guest }}</td>
-            <td>{{ item.number_persons }}</td>
-            <td>{{ item.number_pets }}</td>
-            <td>{{ item.start_date }}</td>
-            <td>{{ item.end_date }}</td>
-            <td>{{ item.price }}</td>
-            <td><a href="/bookings/download/{{ item.id }}"><button class="btn"><i class="fa fa-download"></i></button></a></td>
-            <td><a href="/bookings/delete/{{ item.id }}"><button class="btn"><i class="fa fa-trash"></i></button></a></td>
-          </tr>
+          
+            <tr>
+              
+              <th scope="row"><a href="/bookings/{{ item.id }}">{{ item.id }}</a></th>
+              <td>{{ item.flat }}</td>
+              <td>{{ item.guest }}</td>
+              <td>{{ item.number_persons }}</td>
+              <td>{{ item.number_pets }}</td>
+              <td>{{ item.start_date }}</td>
+              <td>{{ item.end_date }}</td>
+              <td>{{ item.price }}</td>
+              
+              <td><a href="/bookings/download/{{ item.id }}"><button class="btn"><i class="fa fa-download"></i></button></a></td>
+              <td><a href="/bookings/delete/{{ item.id }}"><button class="btn"><i class="fa fa-trash"></i></button></a></td>
+            </tr>
+          
       {% endfor %}
       </tbody>
     </table>
