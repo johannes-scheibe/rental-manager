@@ -1,46 +1,197 @@
-{% extends "base.html" %} {% block title %}Buchungen{% endblock %} {% block content
-    %}
-    <h1 align="center">Buchungen</h1>
-    <br />
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">#</th>
-          <th scope="col">Wohnung</th>
-          <th scope="col">Gast</th>
-          <th scope="col">Personen</th>
-          <th scope="col">Haustiere</th>
-          <th scope="col">Anreise</th>
-          <th scope="col">Abreise</th>
-          <th scope="col">Preis</th>
-          <th scope="col"></th>
-          <th scope="col"></th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in data %}
-          <tr>
-            <th scope="row"><a href="/bookings/show/{{ item.id }}">{{ item.id }}</a></th>
-            <td>{{ item.flat }}</td>
-            <td>{{ item.guest }}</td>
-            <td>{{ item.number_persons }}</td>
-            <td>{{ item.number_pets }}</td>
-            <td>{{ item.start_date }}</td>
-            <td>{{ item.end_date }}</td>
-            <td>{{ item.price }}</td>
-            <td><a href="/bookings/download/{{ item.id }}"><button class="btn"><i class="fa fa-download"></i></button></a></td>
-            <td><a href="/bookings/delete/{{ item.id }}"><button class="btn"><i class="fa fa-trash"></i></button></a></td>
-          </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-      
-    <br />
-    <form method="get" action="/create-booking">
-      <div align="center">
-        <button type="submit" class="btn btn-primary">Buchung erstellen</button>
-      </div>
-    </form>
-    
+{% extends "base.html" %} {% block title %}Buchungen{% endblock %} {% block content %}
+<h1 align="center">Buchungen</h1>
+<br/>
 
-    {% endblock %}
+<div class="container">
+  <div class="row">
+    <div class="col-sm-4">
+      <div class="input-group rounded">
+        <input disabled id="searchInput" onkeyup="searchItems()" type="search" class="form-control rounded"
+          placeholder="Suche (coming soon)" />
+        <span class="input-group-text border-0" id="search-addon">
+          <i class="fa fa-search"></i>
+        </span>
+      </div>
+    </div>
+
+    <div class="col-sm-8">
+      <form method="get" action="/bookings/create">
+        <div align="right">
+          <button type="submit" class="btn btn-primary">Buchung erstellen</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<br/>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Wohnung</th>
+      <th scope="col">Gast</th>
+      <th scope="col">Personen</th>
+      <th scope="col">Anreise</th>
+      <th scope="col">Abreise</th>
+      <th scope="col">Preis</th>
+      <th scope="col">Buchung</th>
+      <th scope="col">Bezahlung</th>
+      <th scope="col">Kurbeitrag</th>
+      <th scope="col"></th>
+      <th scope="col"></th>
+    </tr>
+  </thead>
+  <tbody id="scroller">
+      <template id="post_template">
+        <tr>
+          <th id="id" scope="row"></th>
+          <td id="flat"></td>
+          <td id="guest"></td>
+          <td id="number_persons"></td>
+          <td id="start_date"></td>
+          <td id="end_date"></td>
+          <td id="price"></td>
+          <td id="b_status"></td>
+          <td id="p_status"></td>
+          <td id="t_status"></td>
+      
+          <td><a href="/bookings/download/"><button class="btn"><i class="fa fa-download"></i></button></a></td>
+          <td><a href="/bookings/delete/"><button class="btn"><i class="fa fa-trash"></i></button></a></td>
+        </tr>
+      
+
+    </div>
+  </tbody>
+</table>
+<!-- element to trigger the IntersectionObserver -->
+<div class="d-flex justify-content-center mb-3" id="sentinel">
+  <div class="spinner-border" role="status"></div>
+</div>
+
+
+
+
+
+<script>
+  // Get references to the dom elements
+  var scroller = document.querySelector("#scroller");
+  var template = document.querySelector('#post_template');
+  var sentinel = document.querySelector('#sentinel');
+
+  // Set a counter to count the items loaded
+  var counter = 0;
+
+  // Function to request new items and render to the dom
+  function loadItems() {
+    
+    var quantity = 20
+    // Use fetch to request data and pass the counter value in the QS
+    fetch(`/bookings/load?q=${quantity}&c=${counter}`).then((response) => {
+
+      // Convert the response data to JSON
+      response.json().then((data) => {
+
+        // If empty JSON, exit the function
+         if (data.length < quantity) {
+          // Replace the spinner with "No more posts"
+          sentinel.innerHTML = "Keine weiteren Buchungen";
+        }
+
+        // Iterate over the items in the response
+        for (var i = 0; i < data.length; i++) {
+
+          // Clone the HTML template
+          let template_clone = template.content.cloneNode(true);
+
+          // Query & update the template content
+
+
+          template_clone.querySelector("#id").innerHTML = `<a href="/bookings/show/${data[i]['id']}">${data[i]['id']}</a>`;
+          template_clone.querySelector("#flat").innerHTML = data[i]['flat'].name;
+          template_clone.querySelector("#guest").innerHTML = data[i]['guest'].prename + " " + data[i]['guest'].surname;
+          template_clone.querySelector("#number_persons").innerHTML = data[i]['number_persons'];
+          template_clone.querySelector("#start_date").innerHTML = data[i]['start_date'];
+          template_clone.querySelector("#end_date").innerHTML = data[i]['end_date'];
+          template_clone.querySelector("#price").innerHTML = data[i]['price'];
+          template_clone.querySelector("#b_status").innerHTML = data[i]['booking_status'].status;
+          template_clone.querySelector("#p_status").innerHTML = data[i]['payment_status'].status;
+          template_clone.querySelector("#t_status").innerHTML = data[i]['tourist_tax_status'].status;
+          template_clone.querySelector("#b_status").classList.add('bg-' + data[i]['booking_status'].color)
+          template_clone.querySelector("#p_status").classList.add('bg-' + data[i]['payment_status'].color)
+          template_clone.querySelector("#t_status").classList.add('bg-' + data[i]['tourist_tax_status'].color)
+
+
+          // Append template to dom
+          scroller.appendChild(template_clone);
+
+          // Increment the counter
+          counter += 1;
+        }
+      })
+    })
+  }
+
+  // Create a new IntersectionObserver instance
+  var intersectionObserver = new IntersectionObserver(entries => {
+
+    if (entries[0].intersectionRatio <= 0) {
+      return;
+    }
+
+    // Call the loadItems function
+    loadItems();
+
+  });
+
+  // Instruct the IntersectionObserver to watch the sentinel
+  intersectionObserver.observe(sentinel);
+
+
+  var search_input = document.querySelector('#searchInput')
+
+  function searchItems() {
+
+      const filter = search_input.value
+      //const f = search_input.value;
+
+      // Use fetch to request data and pass the counter value in the QS
+      fetch(`/bookings/search?f=${filter}`).then((response) => {
+
+        // Convert the response data to JSON
+        response.json().then((data) => {
+
+          scroller.innerHTML = '';
+
+          
+
+          // Iterate over the items in the response
+          for (var i = 0; i < data.length; i++) {
+
+            // Clone the HTML template
+            let template_clone = template.content.cloneNode(true);
+
+            // Query & update the template content
+
+            template_clone.querySelector("#id").innerHTML = `<a href="/guests/show/${data[i]['id']}">${data[i]['id']}</a>`;
+            template_clone.querySelector("#prename").innerHTML = data[i]['prename'];
+            template_clone.querySelector("#surname").innerHTML = data[i]['surname'];
+            template_clone.querySelector("#email").innerHTML = data[i]['email'];
+
+            // Append template to dom
+            scroller.appendChild(template_clone);
+
+            // Increment the counter
+            counter += 1;
+          }
+        })
+      })
+    }
+</script>
+
+
+{% endblock %}
+
+
+
+

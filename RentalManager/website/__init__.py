@@ -2,14 +2,18 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from os import path
 from flask_login import LoginManager
+
+from RentalManager.website.database.models import Flat
 from .database import db, DB_NAME
 
 
 def create_app():
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = 'Ddf3Dkf79s0'
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
+
+    # load config
+    app.config.from_object("config.Config")
     db.init_app(app)
+
 
     
     from .auth import auth
@@ -24,8 +28,6 @@ def create_app():
 
     from .database.models import Profile
 
-    create_database(app)
-
     login_manager = LoginManager()
     login_manager.login_view = 'auth.login'
     login_manager.init_app(app)
@@ -34,9 +36,18 @@ def create_app():
     def load_user(id):
         return Profile.query.get(int(id))
 
+    create_database(app)
     return app
 
+
 def create_database(app):
-    if not path.exists('website/database/' + DB_NAME):
-        db.create_all(app=app)
-        print('Created Database!')
+    if not path.exists(app.config['DB_PATH'] + app.config['DB_NAME'] + '.db'):
+        with app.app_context():
+            db.create_all(app=app)
+
+            for name in app.config['FLATS']:
+                if not bool(Flat.query.filter_by(name=name).first()):
+                    flat = Flat(name=name)
+                    db.session.add(flat)
+            db.session.commit()
+            print('Created Database!')

@@ -11,10 +11,10 @@ auth = Blueprint('auth', __name__)
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        profile_name = request.form.get('profileName')
+        name = request.form.get('name')
         password = request.form.get('password')
 
-        profile = Profile.query.filter_by(profile_name=profile_name).first()
+        profile = Profile.query.filter_by(name=name).first()
         if profile:
             if check_password_hash(profile.password, password):
                 flash('Logged in successfully!', category='success')
@@ -38,21 +38,21 @@ def logout():
 @auth.route('/sign-up', methods=['GET', 'POST'])
 def sign_up():
     if request.method == 'POST':
-        profile_name = request.form.get('profileName')
+        name = request.form.get('name')
         password1 = request.form.get('password1')
         password2 = request.form.get('password2')
 
-        profile = Profile.query.filter_by(profile_name=profile_name).first()
+        profile = Profile.query.filter_by(name=name).first()
         if profile:
             flash('Profile name already exists.', category='error')
-        elif len(profile_name) < 4:
+        elif len(name) < 4:
             flash('Profile name must be greater than 3 characters.', category='error')
         elif password1 != password2:
             flash('Passwords don\'t match.', category='error')
         elif len(password1) < 3:
             flash('Password must be at least 3 characters.', category='error')
         else:
-            new_profile = Profile(profile_name=profile_name, password=generate_password_hash(
+            new_profile = Profile(name=name, password=generate_password_hash(
                 password1, method='sha256'))
             db.session.add(new_profile)
             db.session.commit()

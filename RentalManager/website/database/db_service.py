@@ -1,3 +1,6 @@
+from typing import Dict, List, Union
+
+from sqlalchemy import or_
 from .models import Guest, Flat, Booking, RentalAgreement
 from flask import flash
 import os
@@ -9,88 +12,65 @@ from datetime import datetime
 import re
 from ..util.pdf_creator import Agreement 
 from configparser import ConfigParser
-
-def insert_default_entries():
-    try:      
-        # TODO dont accept duplicates  
-        # default entries
-        flat = Flat(profile_id=current_profile.id, name='Borkum')
-        db.session.add(flat)
-
-        flat = Flat(profile_id=current_profile.id, name='Baltrum')
-        db.session.add(flat)
-
-        flat = Flat(profile_id=current_profile.id, name='Langeoog')
-        db.session.add(flat)
-
-        flat = Flat(profile_id=current_profile.id, name='Memmert')
-        db.session.add(flat)
-
-        flat = Flat(profile_id=current_profile.id, name='Studio 1')
-        db.session.add(flat)
-
-        flat = Flat(profile_id=current_profile.id, name='Studio 2')
-        db.session.add(flat)
-
-        db.session.commit()
-        
-        flash('DB erfolgreich befüllt', category='success')
-    except IntegrityError as e:
-        print(e)
-        pass
+from flask import current_app as app
 
 # Guests
-def add_guest(data) -> bool:
-    print(data)
-    guest = Guest.query.filter_by(profile_id=current_profile.id, email=data['email'], prename = data['prename'], surname = data['surname']).first()
+def add_guest(prename, surname, email, street_name, house_number, postcode, city) -> Guest:
+
+    guest = Guest.query.filter_by(email=email, prename =prename, surname = surname).first()
     if guest:
         flash('Es existiert bereits ein Gast mit diesen Angaben.', category='error')
-    elif len(data['email']) < 4:
+    elif len(email) < 4:
         flash('Die E-Mail muss mindestens eine Länge von 3 Zeichen besitzen.', category='error')
-    elif len(data['prename']) < 2:
+    elif len(prename) < 2:
         flash('Der Vorname muss mindestens eine Länge von 2 Zeichen besitzen.', category='error')
-    elif len(data['surname']) < 2:
+    elif len(surname) < 2:
         flash('Der Nachname muss mindestens eine Länge von 2 Zeichen besitzen', category='error')
     else:
-        new_guest = Guest(profile_id=current_profile.id, prename=data['prename'], surname=data['surname'], email=data['email'], street_name=data['street_name'], house_number=data['house_number'], postcode=data['postcode'], city=data['city'])
+        new_guest = Guest(prename=prename, surname=surname, email=email, street_name=street_name, house_number=house_number, postcode=postcode, city=city)
         db.session.add(new_guest)
         db.session.commit()
-        flash('Gast erfolgreich erstellt!', category='success')
-        return True
-    return False
+        return new_guest
+    
+def update_guest(id, **kwargs) -> Guest:
+    guest = Guest.query.filter_by(id=id).first()
+    for key, value in kwargs.items():
+        setattr(guest, key, value)
+    db.session.commit()
+    return guest
 
-def get_guest_by_surname(surname) -> Guest:
-    return Guest.query.filter_by(profile_id=current_profile.id, surname=surname).first()
+def get_guests(filter=None, offset=0, limit=None, order_by=[], **kwargs):
+    if filter is None:
+        return Guest.query.filter_by(**kwargs).order_by(*order_by).slice(offset,limit).all()
+    filter = [c.ilike("%{}%".format(filter)) for c in Guest.__table__.columns]
+    return Guest.query.filter_by(**kwargs).filter(or_(*filter)).order_by(*order_by).slice(offset,limit).all()
+    
 
-def get_guest_by_id(id) -> Guest:
-    return Guest.query.filter_by(profile_id=current_profile.id,id=id).first()
+def get_guest(order_by=[], **kwargs):
+    return Guest.query.filter_by(**kwargs).order_by(*order_by).first()
 
-def get_all_guests() -> Guest:
-    return Guest.query.filter_by(profile_id=current_profile.id).all()
 
 # Flat
-def get_flat_by_id(id) -> Guest:
-    return Flat.query.filter_by(profile_id=current_profile.id,id=id).first()
+def get_flats(filter=None, offset=0, limit=None, order_by=[], **kwargs):
+    if filter is None:
+        return Flat.query.filter_by(**kwargs).order_by(*order_by).slice(offset,limit).all()
+    filter = [c.ilike("%{}%".format(filter)) for c in Flat.__table__.columns]
+    return Flat.query.filter_by(**kwargs).filter(or_(*filter)).order_by(*order_by).slice(offset,limit).all()
+    
+def get_flat(order_by=[], **kwargs):
+    return Flat.query.filter_by(**kwargs).order_by(*order_by).first()
 
 
 # Bookings
-def add_booking(path, data) -> str:
-
-    guest_id = data['guest_id']
-    flat_id =data['flat_id']
-    number_persons =data['number_persons']
-    number_pets =data['number_pets']
-    start_date =data['start_date']
-    end_date =data['end_date']
-    price =data['price']
+def add_booking(flat_id, guest_id, number_persons, number_pets, start_date, end_date, price) -> Booking:
     # check if flat exists
-    flat = Flat.query.filter_by(profile_id=current_profile.id, id=flat_id).first()
+    flat = Flat.query.filter_by(id=flat_id).first()
     if not flat:
         flash('Die angegebene Wohnung existiert nicht.', category='error')
         return None
 
     # check if guest exists
-    guest = Guest.query.filter_by(profile_id=current_profile.id, id=guest_id).first()
+    guest = Guest.query.filter_by(id=guest_id).first()
     if not guest:
         flash('Der angegebene Gast existiert nicht, bitte tragen Sie diesen erst ein.', category='error')
         return None
@@ -104,11 +84,10 @@ def add_booking(path, data) -> str:
 
     # insert in db
     id = uid(Booking)
-    new_booking = Booking(profile_id=current_profile.id, id=id, flat_id=flat_id, timestamp=timestamp(), guest_id=guest_id, number_persons=number_persons, number_pets=number_pets, start_date=start, end_date=end, price=price)
+    new_booking = Booking(id=id, flat_id=flat_id, timestamp=timestamp(), guest_id=guest_id, number_persons=number_persons, number_pets=number_pets, start_date=start, end_date=end, price=price)
     db.session.add(new_booking)
     db.session.commit()
-    flash('Buchung erfolgreich erstellt!', category='success')
-
+    
     agreement = Agreement(new_booking)
     # Erstellen der Vereinbarung
     pdf = agreement.create_agreement()
@@ -116,32 +95,110 @@ def add_booking(path, data) -> str:
     parser = ConfigParser()
     parser.read('config.ini')
     year = datetime.now().year
+    path = app.config['AGREEMENT_PATH']
     if not os.path.exists(path + str(year)):
         os.makedirs(path + str(year))
     file_path = str(path + str(year) + "/" + file_name)
     pdf.output(file_path, 'F').encode('latin-1')
     add_agreement(new_booking.id, file_name)
 
-    flash('PDF erfolgreich erstellt!', category='success')
+    return new_booking
 
-    return file_name
+def update_booking(id, **kwargs) -> Booking:
+    booking = Booking.query.filter_by(id=id).first()
+    for key, value in kwargs.items():
+        if key == 'start_date' or key == 'end_date':
+            value = datetime.strptime(value, '%Y-%m-%d')
+        setattr(booking, key, value)
+    db.session.commit()
+    return booking
 
+def increase_status(id, type, max):
+    booking = Booking.query.filter_by(id=id).first()
+    current_status = getattr(booking, type)
+    if current_status < max:
+        setattr(booking, type, current_status+1)
+        db.session.commit()
+        return booking
 
-def delete_agreement(booking_id: int):
-    bookings = Booking.query.filter_by(profile_id=current_profile.id, id=booking_id)
+def decrease_status(id, type, min):
+    booking = Booking.query.filter_by(id=id).first()
+    current_status = getattr(booking, type)
+    if current_status > min:
+        setattr(booking, type, current_status-1)
+        db.session.commit()
+        return booking
+
+def delete_booking(id: int) -> Agreement:
+    bookings = Booking.query.filter_by(id=id)
     if bookings.count() == 0:
         return None
-    for b in bookings:
-        agreement = RentalAgreement.query.filter_by(profile_id=current_profile.id, booking_id=b.id).first()
-        db.session.delete(b)
+    for booking in bookings:
+        agreement = RentalAgreement.query.filter_by(booking_id=booking.id).first()
+        db.session.delete(booking)
         db.session.delete(agreement)
     db.session.commit() 
+
+    if not os.path.exists(app.config['AGREEMENT_PATH'] + 'deleted'):
+        os.makedirs(app.config['AGREEMENT_PATH'] + 'deleted')
+    
+    if agreement is not None:
+        
+        os.replace(os.path.join(app.config['AGREEMENT_PATH'], str(booking.timestamp.year), agreement.file_name), os.path.join(app.config['AGREEMENT_PATH'], 'deleted', agreement.file_name))
+    else:
+        flash('Ein Fehler ist aufgetreten', category='error')
     return agreement
 
+def get_bookings(filter=None, offset=0, limit=None, order_by=[], **kwargs):
+    if filter is None:
+        return Booking.query.filter_by(**kwargs).order_by(*order_by).slice(offset,limit).all()
 
-def get_all_bookings():
-    return Booking.query.filter_by(profile_id=current_profile.id).order_by(Booking.timestamp.desc())
 
+    filter_list = []
+    for c in Booking.__table__.columns:
+        if c.type == str:
+            filter_list.append(c.ilike("%{}%".format(filter)))
+        else:
+            filter_list.append(c == filter)
+    
+    #filter = [c.ilike("%{}%".format(filter)) for c in Booking.__table__.columns]
+    return Booking.query.filter_by(**kwargs).filter(or_(*filter_list)).order_by(*order_by).slice(offset,limit).all()
+
+def get_booking(order_by=[], **kwargs):
+    return Booking.query.filter_by(**kwargs).order_by(*order_by).first()
+
+
+# Rental agreements
+def add_agreement(booking_id, file_name):
+    new_agreement = RentalAgreement(booking_id=booking_id, timestamp=timestamp(), file_name=file_name)
+    db.session.add(new_agreement)
+    db.session.commit()
+
+def get_agreements(filter=None, offset=0, limit=None, order_by=[], **kwargs):
+    if filter is None:
+        return RentalAgreement.query.filter_by(**kwargs).order_by(*order_by).slice(offset,limit).all()
+    filter = [c.ilike("%{}%".format(filter)) for c in RentalAgreement.__table__.columns]
+    return RentalAgreement.query.filter_by(**kwargs).filter(or_(*filter)).order_by(*order_by).slice(offset,limit).all()
+
+def get_agreement(order_by=[], **kwargs):
+    return RentalAgreement.query.filter_by(**kwargs).order_by(*order_by).first()
+
+
+
+def uid(db_model):
+    # Handle unique ids for all profiles
+    last_entry = db_model.query.order_by(Booking.timestamp.desc()).first()
+    if last_entry is None:
+        running_number = 1
+    else:
+        running_number = int(last_entry.id.split("-")[0]) + 1
+    return "{:03d}".format(running_number) + "-" + str(datetime.now().year)
+
+def timestamp():
+    return int(datetime.now().timestamp() * 1000)
+
+def list_result_to_dict(result):
+    return {r.id : r for r in result}
 
 def is_valid_period(start_date, end_date):
     if start_date < end_date:
@@ -163,26 +220,32 @@ def validate_date(text):
         flash('Bitte das Datum in eine richtigen Format eingeben! (DD.MM.YYYY)', category='error')
         return False
 
-# Rental agreements
-def add_agreement(booking_id, file_name):
-    new_agreement = RentalAgreement(profile_id=current_profile.id, booking_id=booking_id, timestamp=timestamp(), file_name=file_name)
-    db.session.add(new_agreement)
-    db.session.commit()
 
-def get_agreement_by_booking_id(booking_id) -> RentalAgreement:
-    return RentalAgreement.query.filter_by(profile_id=current_profile.id, booking_id=str(booking_id)).first()
+def insert_sample_data():
+    from flask import current_app as app
+    try:      
+        # TODO dont accept duplicates  
+        # default entries
+        guest = Guest(prename='Max', surname='Mustermann', email='test@gmail.com', street_name='Straße', house_number='1a', postcode='11888', city='Stadthausen')
+        db.session.add(guest)
+        db.session.commit()
+        for _ in range(100):
+            data = {
+                'guest_id': guest.id,
+                'flat_id': 1,
+                'number_persons': 2,
+                'number_pets': 0,
+                'start_date': '2022-10-10',
+                'end_date': '2022-10-17',
+                'price': 1000
+            }
+            add_booking(**data)
+               
+        db.session.commit()
+        
+        flash('DB erfolgreich befüllt', category='success')
+    except IntegrityError as e:
+        print(e)
+        pass
 
-def get_all_flats():
-    return Flat.query.filter_by(profile_id=current_profile.id).all()
 
-def uid(db_model):
-    # Handle unique ids for all profiles
-    last_entry = db_model.query.order_by(Booking.timestamp.desc()).first()
-    if last_entry is None:
-        running_number = 1
-    else:
-        running_number = int(last_entry.id.split("-")[0]) + 1
-    return "{:03d}".format(running_number) + "-" + str(datetime.now().year)
-
-def timestamp():
-    return int(datetime.now().timestamp() * 1000)
