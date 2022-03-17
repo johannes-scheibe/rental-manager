@@ -26,7 +26,7 @@ def create_app():
     app.register_blueprint(guests, url_prefix='/')
     app.register_blueprint(bookings, url_prefix='/')
 
-    from .database.models import Profile
+    from .database.models import Database
 
     login_manager = LoginManager()
     login_manager.login_view = 'auth.login'
@@ -34,7 +34,7 @@ def create_app():
 
     @login_manager.user_loader
     def load_user(id):
-        return Profile.query.get(int(id))
+        return Database.query.get(int(id))
 
     create_database(app)
     return app

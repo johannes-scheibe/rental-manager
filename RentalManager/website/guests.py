@@ -49,7 +49,9 @@ def search():
 @login_required
 def guest_details(guest_id):
     guest = db_service.get_guest(id=guest_id)
-    bookings = db_service.list_result_to_dict(db_service.get_bookings(guest_id=guest_id))
+    
+
+    bookings = (db_service.get_bookings(guest_id=guest_id))
     flats = db_service.list_result_to_dict(db_service.get_flats())
     return render_template("guest_details.html", profile=current_profile, guest=guest, bookings=bookings, flats=flats)
 
