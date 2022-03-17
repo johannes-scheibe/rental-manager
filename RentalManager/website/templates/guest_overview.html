@@ -1,34 +1,165 @@
-{% extends "base.html" %} {% block title %}Gäste{% endblock %} {% block content
-    %}
-    <h1 align="center">Gäste</h1>
-    <br />
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">#</th>
-          <th scope="col">Vorname</th>
-          <th scope="col">Nachname</th>
-          <th scope="col">E-Mail</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in data %}
-          <tr>
-            <th scope="row"><a href="/guests/{{ item.id }}">{{ item.id }}</a></th>
-            <td>{{ item.prename }}</td>
-            <td>{{ item.surname }}</td>
-            <td>{{ item.email }}</td>
-          </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-    
-    <br />
-    <form method="get" action="/add-guest">
-      <div align="center">
+{% extends "base.html" %} {% block title %}Gäste{% endblock %} {% block content %}
+<h1 align="center">Gäste</h1>
+<br />
+
+<div class="container">
+  <div class="row">
+    <div class="col-sm-4">
+      <div class="input-group rounded">
+        <input id="searchInput" onkeyup="searchItems()" type="search" class="form-control rounded" placeholder="Suche" />
+        <span class="input-group-text border-0" id="search-addon">
+          <i class="fa fa-search"></i>
+        </span>
+      </div>
+    </div>
+
+    <div class="col-sm-8">
+      <form method="get" action="/guests/create">
+      <div align="right">
         <button type="submit" class="btn btn-primary">Gast hinzufügen</button>
       </div>
-    </form>
-    
+      </form>
+    </div>
+  </div>
+</div>
 
-    {% endblock %}
+<br/>
+
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Vorname</th>
+      <th scope="col">Nachname</th>
+      <th scope="col">E-Mail</th>
+    </tr>
+  </thead>
+  <tbody id="scroller">
+    <template id="post_template">
+    
+      <tr>
+        <th id="id" scope="row"></th>
+        <td id="prename"></td>
+        <td id="surname"></td>
+        <td id="email"></td>
+      </tr>
+    </template>
+  </tbody>
+</table>
+
+</table>
+<!-- element to trigger the IntersectionObserver -->
+<div class="d-flex justify-content-center mb-3" id="sentinel">
+  <div class="spinner-border" role="status"></div>
+</div>
+
+<br />
+
+
+<script>
+  
+  // Get references to the dom elements
+  var scroller = document.querySelector("#scroller");
+  var template = document.querySelector('#post_template');
+  var sentinel = document.querySelector('#sentinel');
+  var search_input = document.querySelector('#searchInput')
+
+  // Set a counter to count the items loaded
+  var counter = 0;
+
+  // Function to request new items and render to the dom
+  function loadItems() {
+
+    var quantity = 20
+
+    // Use fetch to request data and pass the counter value in the QS
+    fetch(`/guests/load?q=${quantity}&c=${counter}`).then((response) => {
+
+      // Convert the response data to JSON
+      response.json().then((data) => {
+
+        // If empty JSON, exit the function
+        if (data.length < quantity) {
+          // Replace the spinner with "No more posts"
+          sentinel.innerHTML = "Keine weiteren Buchungen";
+        }
+
+        // Iterate over the items in the response
+        for (var i = 0; i < data.length; i++) {
+
+          // Clone the HTML template
+          let template_clone = template.content.cloneNode(true);
+
+          // Query & update the template content
+
+          template_clone.querySelector("#id").innerHTML = `<a href="/guests/show/${data[i]['id']}">${data[i]['id']}</a>`;
+          template_clone.querySelector("#prename").innerHTML = data[i]['prename'];
+          template_clone.querySelector("#surname").innerHTML = data[i]['surname'];
+          template_clone.querySelector("#email").innerHTML = data[i]['email'];
+        
+          // Append template to dom
+          scroller.appendChild(template_clone);
+
+          // Increment the counter
+          counter += 1;
+        }
+      })
+    })
+  }
+
+  // Create a new IntersectionObserver instance
+  var intersectionObserver = new IntersectionObserver(entries => {
+
+    if (entries[0].intersectionRatio <= 0) {
+      return;
+    }
+
+    // Call the loadItems function
+    loadItems();
+
+  });
+
+  // Instruct the IntersectionObserver to watch the sentinel
+  intersectionObserver.observe(sentinel);
+
+
+  function searchItems() {
+      
+      const filter = search_input.value
+      //const f = search_input.value;
+
+      // Use fetch to request data and pass the counter value in the QS
+      fetch(`/guests/search?f=${filter}`).then((response) => {
+
+        // Convert the response data to JSON
+        response.json().then((data) => {
+
+          scroller.innerHTML = '';
+          
+          // Iterate over the items in the response
+          for (var i = 0; i < data.length; i++) {
+
+            // Clone the HTML template
+            let template_clone = template.content.cloneNode(true);
+
+            // Query & update the template content
+
+            template_clone.querySelector("#id").innerHTML = `<a href="/guests/show/${data[i]['id']}">${data[i]['id']}</a>`;
+            template_clone.querySelector("#prename").innerHTML = data[i]['prename'];
+            template_clone.querySelector("#surname").innerHTML = data[i]['surname'];
+            template_clone.querySelector("#email").innerHTML = data[i]['email'];
+
+            // Append template to dom
+            scroller.appendChild(template_clone);
+
+            // Increment the counter
+            counter += 1;
+          }
+        })
+      })
+    }
+
+</script>
+
+{% endblock %}

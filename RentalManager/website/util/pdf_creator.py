@@ -23,8 +23,8 @@ class PDF(FPDF):
 
 class Agreement():
     def __init__(self, booking: Booking):
-        guest = db_service.get_guest_by_id(booking.guest_id)
-        flat = db_service.get_flat_by_id(booking.flat_id)
+        guest = db_service.get_guest(id=booking.guest_id)
+        flat = db_service.get_flat(id=booking.flat_id)
         self.prename = guest.prename
         self.surname = guest.surname
         self.street = guest.street_name

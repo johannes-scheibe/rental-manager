@@ -1,0 +1,103 @@
+{% extends "base.html" %} {% block title %}Gast hinzufügen{% endblock %} 
+{% block content %}
+
+{% if data is none %}
+  {% set mode = 'erstellen' %}
+  {% set data_available = False%}
+{% else %}
+  {% set mode = 'aktualisieren' %}
+  {% set data_available = True %}
+{% endif %}
+
+<form method="POST">
+  <h3 align="center">Gast
+    {{ mode }}
+  </h3>
+  <div class="form-group">
+    <label for="prename">Vorname</label>
+    <input
+      type="text"
+      class="form-control"
+      id="prename"
+      name="prename"
+      placeholder="Vorname eingeben"
+      {% if data_available %} value= {{ data.prename }} {% endif %}
+      required
+    />
+  </div>
+  <div class="form-group">
+    <label for="surname">Nachname</label>
+    <input
+      type="text"
+      class="form-control"
+      id="surname"
+      name="surname"
+      placeholder="Nachname eingeben"
+      {% if data_available %} value= {{ data.surname }} {% endif %}
+      required
+    />
+  </div>
+  <div class="form-group">
+    <label for="email">E-Mail</label>
+    <input
+      type="email"
+      class="form-control"
+      id="email"
+      name="email"
+      placeholder="E-Mail eingeben"
+      {% if data_available %} value= {{ data.email }} {% endif %}
+      required
+    />
+  </div>
+  <div class="form-group">
+    <label for="streetName">Straße</label>
+    <input
+      type="text"
+      class="form-control"
+      id="streetName"
+      name="streetName"
+      placeholder="Straße eingeben"
+      {% if data_available %} value= {{ data.street_name }} {% endif %}
+      required
+    />
+  </div>
+  <div class="form-group">
+    <label for="houseNumber">Hausnummer</label>
+    <input
+      type="text"
+      class="form-control"
+      id="houseNumber"
+      name="houseNumber"
+      placeholder="Hausnummer eingeben"
+      {% if data_available %} value= {{ data.house_number }} {% endif %}
+      required
+    />
+  </div>
+  <div class="form-group">
+    <label for="postcode">Postleitzahl</label>
+    <input
+      type="text"
+      class="form-control"
+      id="postcode"
+      name="postcode"
+      placeholder="Postleitzahl eingeben"
+      {% if data_available %} value= {{ data.postcode }} {% endif %}
+      required
+    />
+  </div>
+  <div class="form-group">
+    <label for="city">Stadt</label>
+    <input
+      type="text"
+      class="form-control"
+      id="city"
+      name="city"
+      placeholder="Stadt eingeben"
+      {% if data_available %} value= {{ data.city }} {% endif %}
+      required
+    />
+  </div>
+  <br />
+  <button type="submit" class="btn btn-primary">Speichern</button>
+</form>
+{% endblock %}

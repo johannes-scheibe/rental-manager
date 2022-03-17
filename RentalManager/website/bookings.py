@@ -1,15 +1,14 @@
-from flask import Blueprint, render_template, request, flash, jsonify, redirect, url_for, send_from_directory, abort
+from pathlib import Path
+import time
+from flask import Blueprint, make_response, render_template, request, flash, jsonify, redirect, url_for, send_from_directory, abort
 from flask_login import login_required, current_user as current_profile
 import json
+
+from RentalManager.website.database.models import Booking, Flat, Guest
 from .database import db_service
-from .database import db
-from .util.pdf_creator import Agreement 
-from configparser import ConfigParser
 from flask import current_app as app
 from datetime import datetime
 import os
-
-
 
 
 bookings = Blueprint('bookings', __name__)
@@ -18,38 +17,82 @@ bookings = Blueprint('bookings', __name__)
 @bookings.route('/bookings')
 @login_required
 def booking_overview():
+    return render_template('booking_overview.html', profile=current_profile)
+
+@bookings.route("/bookings/load")
+@login_required
+def load():
+    time.sleep(0.2)  # Used to simulate delay
+    
+    guests = db_service.list_result_to_dict(db_service.get_guests())
+    flats = db_service.list_result_to_dict(db_service.get_flats())
+    
+    if request.args:
+        counter = int(request.args.get("c"))  # The 'counter' value sent in the QS
+        quantity = int(request.args.get("q"))
+        bookings = db_service.get_bookings(offset=counter, limit=counter+quantity, order_by=[Booking.id])
+  
     data = []
-    bookings = db_service.get_all_bookings()
+    for item in bookings:
+        item = item.as_dict()
+        item['guest'] = guests[item['guest_id']].as_dict()
+        item['flat'] = flats[item['flat_id']].as_dict()
+        item['start_date'] = item['start_date'].strftime('%d.%m.%Y')
+        item['end_date'] = item['end_date'].strftime('%d.%m.%Y')
+        item['booking_status'] = app.config['BOOKING_STATES'][item['booking_status']]
+        item['payment_status'] = app.config['PAYMENT_STATES'][item['payment_status']]
+        item['tourist_tax_status'] = app.config['TOURIST_TAX_STATES'][item['tourist_tax_status']]
+        data.append(item)
 
-    for booking in bookings:
-        guest = db_service.get_guest_by_id(booking.guest_id)
-        flat = db_service.get_flat_by_id(booking.flat_id)
-        entry = {
-            "id" : booking.id,
-            "flat" : flat.name,
-            "guest" : guest.prename + " " + guest.surname,
-            "number_persons" : booking.number_persons,
-            "number_pets" : booking.number_pets,
-            "start_date" : booking.start_date.strftime("%d.%m.%Y"),
-            "end_date" : booking.end_date.strftime("%d.%m.%Y"),
-            "price" : str(booking.price) + " €"
-        }
-        data.append(entry)
-    return render_template("booking_overview.html", profile=current_profile, data=data)
+    return make_response(jsonify(data), 200)
 
-@bookings.route('/bookings/<string:booking_id>')
+@bookings.route("/bookings/search")
 @login_required
-def booking_details(booking_id):
-    booking = db_service.get_booking_by_id(booking_id)
-    guest = db_service.get_guest_by_id(booking.guest_id)
-    flat = db_service.get_flat_by_id(booking.flat_id)
+def search():
+    time.sleep(0.2)  # Used to simulate delay
+        
+    if request.args:
+        filter = str(request.args.get("f"))
+        print(filter)
+    
+        bookings = db_service.get_bookings(filter=filter, order_by=[Booking.id])
+        guests = db_service.list_result_to_dict(db_service.get_guests())
+        flats = db_service.list_result_to_dict(db_service.get_flats())
+        data = []
+        for item in bookings:
+            item = item.as_dict()
+            item['guest'] = guests[item['guest_id']].as_dict()
+            item['flat'] = flats[item['flat_id']].as_dict()
+            item['start_date'] = item['start_date'].strftime('%d.%m.%Y')
+            item['end_date'] = item['end_date'].strftime('%d.%m.%Y')
+            item['booking_status'] = app.config['BOOKING_STATES'][item['booking_status']]
+            item['payment_status'] = app.config['PAYMENT_STATES'][item['payment_status']]
+            item['tourist_tax_status'] = app.config['TOURIST_TAX_STATES'][item['tourist_tax_status']]
+            data.append(item)
 
-    return render_template("booking_details.html", profile=current_profile, guest=guest, booking=booking, flat=flat)
+        return make_response(jsonify(data), 200)
 
 
-@bookings.route('/create-booking', methods=['GET', 'POST'])
+@bookings.route('/bookings/show/<string:id>')
 @login_required
-def create_booking():
+def booking_details(id):
+    booking = db_service.get_booking(id=id)
+    guest = db_service.get_guest(id=booking.guest_id)
+    flat = db_service.get_flat(id=booking.flat_id)
+
+    return render_template('booking_details.html', profile=current_profile, guest=guest, booking=booking, flat=flat, booking_states = app.config['BOOKING_STATES'],payment_states = app.config['PAYMENT_STATES'], tourist_tax_states = app.config['TOURIST_TAX_STATES'])
+
+@bookings.route('/bookings/form')
+@login_required
+def booking_form(data=None):
+    guests = db_service.get_guests(order_by=[Guest.surname, Guest.prename])
+    flats = db_service.get_flats(order_by=[Flat.name])
+    return render_template('booking_form.html', profile=current_profile, data = data, guests = guests, flats = flats)
+
+@bookings.route('/bookings/create', methods=['GET', 'POST'])
+@bookings.route('/bookings/update/<string:id>', methods=['GET', 'POST'])
+@login_required
+def update_booking(id=None):
     if request.method == 'POST':
         data = {
             'guest_id' : request.form.get('guestId'),
@@ -61,73 +104,72 @@ def create_booking():
             'price' : request.form.get('price')
         }
         
-        # Check if no data is none
-        for d in data.values():
-            if d is None or d == "":
-                guests = db_service.get_all_guests()
-                flats = db_service.get_all_flats()
-                flash("Bitte alle Felder ausfüllen")
-                return render_template("create_booking.html", profile=current_profile, guests = guests, flats = flats, data = data)
+        if id:
+            booking = db_service.update_booking(id=id, **data)
+            if booking:
+                return redirect(url_for('bookings.booking_details', id=id)) 
+        else:
+            booking = db_service.add_booking(**data)
+            if booking:
+                return redirect(url_for('bookings.booking_overview')) 
+        return booking_form(data)
 
-        path = app.config["CLIENT_AGREEMENTS"] + str(current_profile.profile_name) + "/"
-        file_name = db_service.add_booking(path=path, data=data)
-        if file_name is not None:
-            flash("Die Buchung wurde erfolgreich erstellt")
-            redirect("/bookings") 
+    data = db_service.get_booking(id=id) if id else None
+    return booking_form(data)
 
-    data = {
-            'guest_id' : "",
-            'flat_id' : "",
-            'number_persons' : "",
-            'number_pets' : "",
-            'start_date' : "",
-            'end_date' : "",
-            'price' : ""
-        }
-    guests = db_service.get_all_guests()
-    flats = db_service.get_all_flats()
-    return render_template("create_booking.html", profile=current_profile, guests = guests, flats = flats, data = data)
-
-
-
-
-@bookings.route("/bookings/delete/<string:booking_id>")
+@bookings.route('/bookings/delete/<string:booking_id>')
 @login_required
-def delete(booking_id):
-    print("Delete")
-    if not os.path.exists(app.config["CLIENT_AGREEMENTS"] + str(current_profile.profile_name) + "/" + "deleted"):
-        os.makedirs(app.config["CLIENT_AGREEMENTS"] + str(current_profile.profile_name) + "/" + "deleted")
-    deleted_agreement = db_service.delete_agreement(booking_id)
-    if deleted_agreement is not None:
-        year = booking_id.split("-")[1]
-        print(year)
-        os.replace(os.path.join(app.config["CLIENT_AGREEMENTS"] + str(current_profile.profile_name) + "/", str(year), deleted_agreement.file_name), os.path.join(app.config["CLIENT_AGREEMENTS"] + str(current_profile.profile_name) + "/", "deleted", deleted_agreement.file_name))
-        flash("Die Buchung wurde erfolgreich gelöscht", category='success')
-    else:
-        flash("Ein Fehler ist aufgetreten", category='error')
-    return redirect("/bookings")
+def delete_booking(booking_id):
 
-@bookings.route("/bookings/download/<string:booking_id>")
+    db_service.delete_booking(booking_id)
+   
+    return redirect('/bookings')
+
+@bookings.route('/bookings/download/<string:booking_id>')
 @login_required
-def download(booking_id):
-    agreement = db_service.get_agreement_by_booking_id(booking_id)
+def download_booking(booking_id):
+    agreement = db_service.get_agreement(booking_id=booking_id)
     year = datetime.now().year
+    path = Path(app.config['AGREEMENT_PATH']) / str(year)
     try:
-        return send_from_directory(app.config["CLIENT_AGREEMENTS"] + str(current_profile.profile_name) + "/"  + str(year), filename=agreement.file_name, as_attachment=True)
+        return send_from_directory(path, filename=agreement.file_name, as_attachment=True)
     except Exception as e:
-        print(app.config["CLIENT_AGREEMENTS"] + str(current_profile.profile_name) + "/" + agreement.file_name)
+        print(app.config['AGREEMENT_PATH'] + str(current_profile.profile_name) + '/' + agreement.file_name)
         return abort(404)
-    return redirect("/bookings")
 
-@bookings.route("/bookings/show/<string:booking_id>")
+@bookings.route('/bookings/agreement/<string:booking_id>')
 @login_required
-def show(booking_id):
-    agreement = db_service.get_agreement_by_booking_id(booking_id)
-    year = booking_id.split("-")[1]
+def show_agreement(booking_id):
+    agreement = db_service.get_agreement(booking_id=booking_id)
+    year = booking_id.split('-')[1]
     try:
-        return send_from_directory(app.config["CLIENT_AGREEMENTS"] + str(current_profile.profile_name) + "/" + str(year) , filename=agreement.file_name, as_attachment=False)
+        return send_from_directory(app.config['AGREEMENT_PATH'] + str(current_profile.profile_name) + '/' + str(year) , filename=agreement.file_name, as_attachment=False)
     except Exception as e:
         print(e)
         return abort(404)
 
-        
+@bookings.route('/bookings/complete-task/<string:task>/<string:booking_id>')
+@login_required       
+def complete_task(task, booking_id):
+    functions = {
+        'booking-task': [booking_id, 'booking_status', len(app.config['BOOKING_STATES'])-1],
+        'payment-task': [booking_id, 'payment_status', len(app.config['PAYMENT_STATES'])-1],
+        'tourist-tax-task': [booking_id, 'tourist_tax_status', len(app.config['TOURIST_TAX_STATES'])-1]
+    }
+
+    db_service.increase_status(*functions[task])
+
+    return redirect(url_for('bookings.booking_details', id=booking_id))
+
+@bookings.route('/bookings/undo-task/<string:task>/<string:booking_id>')
+@login_required       
+def undo_task(task, booking_id):
+    functions = {
+        'booking-task': [booking_id, 'booking_status', 0],
+        'payment-task': [booking_id, 'payment_status', 0],
+        'tourist-tax-task': [booking_id, 'tourist_tax_status', 0]
+    }
+
+    db_service.decrease_status(*functions[task])
+
+    return redirect(url_for('bookings.booking_details', id=booking_id))

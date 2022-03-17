@@ -17,7 +17,7 @@ homepage = Blueprint('homepage', __name__)
 def home():
     return render_template("home.html", profile=current_profile)
 
-@homepage.route('/init-db')
-def init_db():
-    db_service.insert_default_entries()
+@homepage.route('/sample-data')
+def sample_data():
+    db_service.insert_sample_data()
     return redirect(url_for('homepage.home'))
