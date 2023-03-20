@@ -56,8 +56,8 @@
           <td id="p_status"></td>
           <td id="t_status"></td>
       
-          <td><a href="/bookings/download/"><button class="btn"><i class="fa fa-download"></i></button></a></td>
-          <td><a href="/bookings/delete/"><button class="btn"><i class="fa fa-trash"></i></button></a></td>
+          <td><a id="download" href="/bookings/download/"><button class="btn"><i class="fa fa-download"></i></button></a></td>
+          <td><a id="delete" href="/bookings/delete/"><button class="btn"><i class="fa fa-trash"></i></button></a></td>
         </tr>
       
 
@@ -117,10 +117,11 @@
           template_clone.querySelector("#b_status").innerHTML = data[i]['booking_status'].status;
           template_clone.querySelector("#p_status").innerHTML = data[i]['payment_status'].status;
           template_clone.querySelector("#t_status").innerHTML = data[i]['tourist_tax_status'].status;
-          template_clone.querySelector("#b_status").classList.add('bg-' + data[i]['booking_status'].color)
-          template_clone.querySelector("#p_status").classList.add('bg-' + data[i]['payment_status'].color)
-          template_clone.querySelector("#t_status").classList.add('bg-' + data[i]['tourist_tax_status'].color)
-
+          template_clone.querySelector("#b_status").classList.add('bg-' + data[i]['booking_status'].color);
+          template_clone.querySelector("#p_status").classList.add('bg-' + data[i]['payment_status'].color);
+          template_clone.querySelector("#t_status").classList.add('bg-' + data[i]['tourist_tax_status'].color);
+          template_clone.querySelector("#download").href = `/bookings/download/${data[i]['id']}`; 
+          template_clone.querySelector("#delete").href = `/bookings/delete/${data[i]['id']}`; 
 
           // Append template to dom
           scroller.appendChild(template_clone);

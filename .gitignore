@@ -79,5 +79,8 @@ __pycache__/
 agreements/
 *.db
 
-# Config
-config.py
+
+*.app/
+*.build/
+*.dist/
+*.app/

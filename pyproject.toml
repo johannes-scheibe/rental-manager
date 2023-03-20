@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "rental-manager"
+version = "0.1.0"
+description = ""
+authors = ["Johannes <scheibe.johannes@t-online.de>"]
+readme = "README.md"
+packages = [{include = "rental_manager"}]
+
+[tool.poetry.dependencies]
+python = ">=3.7,<3.12"
+flask = "^2.2.3"
+flask-login = "^0.6.2"
+flask-sqlalchemy = "^3.0.3"
+sqlalchemy-utils = "^0.40.0"
+fpdf = "^1.7.2"
+cryptography = "^39.0.2"
+flaskwebgui = "^1.0.4"
+pywebview = "^4.0.2"
+
+[tool.poetry.group.dev.dependencies]
+nuitka = "^1.5.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -2,12 +2,12 @@ import time
 from flask import Blueprint, make_response, render_template, request, flash, jsonify, redirect, url_for, send_from_directory, abort
 from flask_login import login_required, current_user as current_profile
 import json
-from .database import db_service
-from .database import db
-from .util.pdf_creator import Agreement 
+from app.database import db_service
+from app.database import db
+from app.utils.pdf_creator import Agreement 
 from configparser import ConfigParser
 from flask import current_app as app
-from .database.models import Guest
+from app.database.models import Guest
 
 from os import path
 

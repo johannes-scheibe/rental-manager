@@ -1,16 +1,17 @@
+from pathlib import Path
 from typing import Dict, List, Union
 
 from sqlalchemy import or_
 from .models import Guest, Flat, Booking, RentalAgreement
 from flask import flash
 import os
-from . import db, DB_NAME
+from . import db
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
 from flask_login import current_user as current_profile
 from datetime import datetime
 import re
-from ..util.pdf_creator import Agreement 
+from app.utils.pdf_creator import Agreement 
 from configparser import ConfigParser
 from flask import current_app as app
 
@@ -95,10 +96,11 @@ def add_booking(flat_id, guest_id, number_persons, number_pets, start_date, end_
     parser = ConfigParser()
     parser.read('config.ini')
     year = datetime.now().year
-    path = app.config['AGREEMENT_PATH']
-    if not os.path.exists(path + str(year)):
-        os.makedirs(path + str(year))
-    file_path = str(path + str(year) + "/" + file_name)
+
+    path: Path= app.config["DOC_PATH"] / "agreements" / str(year)
+    path.mkdir(exist_ok=True, parents=True)
+
+    file_path = str(path / file_name)
     pdf.output(file_path, 'F').encode('latin-1')
     add_agreement(new_booking.id, file_name)
 
@@ -134,17 +136,18 @@ def delete_booking(id: int) -> Agreement:
     if bookings.count() == 0:
         return None
     for booking in bookings:
-        agreement = RentalAgreement.query.filter_by(booking_id=booking.id).first()
         db.session.delete(booking)
-        db.session.delete(agreement)
+        agreement = RentalAgreement.query.filter_by(booking_id=booking.id).first()
+        if agreement:
+            db.session.delete(agreement)
     db.session.commit() 
 
-    if not os.path.exists(app.config['AGREEMENT_PATH'] + 'deleted'):
-        os.makedirs(app.config['AGREEMENT_PATH'] + 'deleted')
+    trash = app.config['DOC_PATH'] / 'deleted'
+    trash.mkdir(exist_ok = True, parents= True)
     
     if agreement is not None:
-        
-        os.replace(os.path.join(app.config['AGREEMENT_PATH'], str(booking.timestamp.year), agreement.file_name), os.path.join(app.config['AGREEMENT_PATH'], 'deleted', agreement.file_name))
+        agreement_path = app.config['DOC_PATH'] / "agreements" / str(datetime.fromtimestamp(booking.timestamp).year)
+        os.replace( agreement_path / agreement.file_name, trash / agreement.file_name)
     else:
         flash('Ein Fehler ist aufgetreten', category='error')
     return agreement
@@ -164,7 +167,7 @@ def get_bookings(filter=None, offset=0, limit=None, order_by=[], **kwargs):
     #filter = [c.ilike("%{}%".format(filter)) for c in Booking.__table__.columns]
     return Booking.query.filter_by(**kwargs).filter(or_(*filter_list)).order_by(*order_by).slice(offset,limit).all()
 
-def get_booking(order_by=[], **kwargs):
+def get_booking(order_by=[], **kwargs) -> Booking:
     return Booking.query.filter_by(**kwargs).order_by(*order_by).first()
 
 
@@ -180,7 +183,7 @@ def get_agreements(filter=None, offset=0, limit=None, order_by=[], **kwargs):
     filter = [c.ilike("%{}%".format(filter)) for c in RentalAgreement.__table__.columns]
     return RentalAgreement.query.filter_by(**kwargs).filter(or_(*filter)).order_by(*order_by).slice(offset,limit).all()
 
-def get_agreement(order_by=[], **kwargs):
+def get_agreement(order_by=[], **kwargs) -> RentalAgreement:
     return RentalAgreement.query.filter_by(**kwargs).order_by(*order_by).first()
 
 
@@ -192,10 +195,10 @@ def uid(db_model):
         running_number = 1
     else:
         running_number = int(last_entry.id.split("-")[0]) + 1
-    return "{:03d}".format(running_number) + "-" + str(datetime.now().year)
+    return str(datetime.now().year) + "-" + "{:03d}".format(running_number)
 
 def timestamp():
-    return int(datetime.now().timestamp() * 1000)
+    return datetime.now().timestamp()
 
 def list_result_to_dict(result):
     return {r.id : r for r in result}

@@ -1,11 +1,11 @@
 from pathlib import Path
 import time
-from flask import Blueprint, make_response, render_template, request, flash, jsonify, redirect, url_for, send_from_directory, abort
+from flask import Blueprint, make_response, render_template, request, flash, jsonify, redirect, send_file, url_for, send_from_directory, abort
 from flask_login import login_required, current_user as current_profile
 import json
 
-from RentalManager.website.database.models import Booking, Flat, Guest
-from .database import db_service
+from app.database.models import Booking, Flat, Guest
+from app.database import db_service
 from flask import current_app as app
 from datetime import datetime
 import os
@@ -127,23 +127,25 @@ def delete_booking(booking_id):
 
 @bookings.route('/bookings/download/<string:booking_id>')
 @login_required
-def download_booking(booking_id):
+def download_agreement(booking_id):
+    print("Downloading ...")
     agreement = db_service.get_agreement(booking_id=booking_id)
-    year = datetime.now().year
-    path = Path(app.config['AGREEMENT_PATH']) / str(year)
+    year = datetime.fromtimestamp(db_service.get_booking(id=booking_id).timestamp).year
     try:
-        return send_from_directory(path, filename=agreement.file_name, as_attachment=True)
+        file = app.config['DOC_PATH'] / "agreements" / str(year) / agreement.file_name
+        return send_file(file, as_attachment=True)
     except Exception as e:
-        print(app.config['AGREEMENT_PATH'] + str(current_profile.profile_name) + '/' + agreement.file_name)
+        
         return abort(404)
 
 @bookings.route('/bookings/agreement/<string:booking_id>')
 @login_required
 def show_agreement(booking_id):
     agreement = db_service.get_agreement(booking_id=booking_id)
-    year = booking_id.split('-')[1]
+    year = datetime.fromtimestamp(db_service.get_booking(id=booking_id).timestamp).year
     try:
-        return send_from_directory(app.config['AGREEMENT_PATH'] + str(current_profile.profile_name) + '/' + str(year) , filename=agreement.file_name, as_attachment=False)
+        file = app.config['DOC_PATH'] / "agreements" / str(year) / agreement.file_name
+        return send_file(file)
     except Exception as e:
         print(e)
         return abort(404)

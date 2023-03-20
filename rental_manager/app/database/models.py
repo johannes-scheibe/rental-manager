@@ -42,7 +42,7 @@ class Guest(Base, db.Model):
 
 class Booking(Base, db.Model):
     id = db.Column(db.String, primary_key=True)
-    timestamp = db.Column(db.Integer)
+    timestamp = db.Column(db.Float)
     flat_id = db.Column(db.Integer, db.ForeignKey('flat.id'))
     guest_id = db.Column(db.Integer, db.ForeignKey('guest.id'))
     number_persons = db.Column(db.Integer)
@@ -57,7 +57,6 @@ class Booking(Base, db.Model):
 
 class RentalAgreement(Base, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.Integer)
-
+    timestamp = db.Column(db.Float)
     booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'))
     file_name = db.Column(db.String(150))

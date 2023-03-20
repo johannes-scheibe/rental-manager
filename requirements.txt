@@ -1,6 +1,0 @@
-flask
-flask-login
-flask-sqlalchemy
-sqlalchemy_utils
-fpdf
-cryptography
